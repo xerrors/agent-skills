@@ -36,7 +36,7 @@ The story started from a timely debate about whether agents should output HTML i
 - Use real screenshots whenever possible.
 - Use light caption pills on dark screenshots.
 - Remove outer card radius when the user wants clean screenshots.
-- Put a `文案` button in the card operation area. It opens a modal containing title candidates, body copy, tags, and a full post bundle with copy buttons.
+- Put title candidates, body copy, tags, and a full post bundle in a visible copy panel. On wide screens it sits beside the card preview; on narrow screens it stacks below the deck.
 - Keep reusable templates image-free: use placeholder screenshot slots that describe what image belongs there. Replace those placeholders with real screenshots only in the concrete project output.
 
 ## Copy Example
