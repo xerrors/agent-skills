@@ -2,19 +2,16 @@
 
 Private skill repository for reusable agent workflows.
 
-This repository is intentionally empty for now. Future skills should live under
-`skills/<skill-name>/` and each skill must include a `SKILL.md` file.
+Skills live under `skills/<skill-name>/` and each skill must include a
+`SKILL.md` file.
 
 ## Repository Layout
 
 ```text
 agent-skills/
 ├── skills/
-│   └── <skill-name>/
+│   └── process-arxiv-paper/
 │       ├── SKILL.md
-│       ├── scripts/
-│       ├── references/
-│       ├── assets/
 │       └── agents/
 │           └── openai.yaml
 ├── CONTRIBUTING.md
@@ -65,3 +62,9 @@ npx --yes skills add . -a codex --skill <skill-name> -g -y
 ```
 
 Restart Codex after installing or updating skills.
+
+## Current Skills
+
+- `process-arxiv-paper`: find, download, translate, and analyze arXiv papers,
+  including paper assets, source-code discovery, Chinese Markdown translation,
+  and UV/demo notes.
