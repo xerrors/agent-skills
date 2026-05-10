@@ -1,12 +1,12 @@
 ---
 name: product-launch-card-kit
-description: Create a complete social launch kit for an app, open-source project, agent skill, plugin, developer tool, or small product. Use this skill whenever the user asks for Xiaohongshu/小红书 launch posts, social media cards, publishable HTML, PNG export cards, product launch copy, titles, captions, hashtags/tags, or asks to turn a product story into a screenshot-ready deck. The default deliverable is a single HTML workbench that shows the card deck, can download/export publishable PNGs, and contains copyable titles, body text, and tags.
+description: Create a complete social launch kit for an app, open-source project, agent skill, plugin, developer tool, or small product. Use this skill whenever the user asks for Xiaohongshu/小红书 launch posts, social media cards, publishable HTML, PNG export cards, product launch copy, titles, captions, hashtags/tags, or asks to turn a product story into a screenshot-ready deck. The default deliverable is a single HTML preview workbench with card navigation, PNG download/export, and an operation-area button that opens a copywriting modal containing title candidates, body text, and tags.
 argument-hint: [project-or-product-to-launch]
 ---
 
 # Product Launch Card Kit
 
-Use this skill to turn a product, repo, agent workflow, or feature into a publishable social launch package. The normal output is not just copy and not just images: it is a self-contained HTML workbench where the user can preview cards, download PNGs, and copy the title/body/tags directly.
+Use this skill to turn a product, repo, agent workflow, or feature into a publishable social launch package. The normal output is not just copy and not just images: it is a self-contained HTML preview workbench where the user can preview cards, download PNGs, and open a copywriting modal to copy title candidates, body text, and tags.
 
 ## Default Deliverables
 
@@ -22,9 +22,9 @@ The HTML workbench should include:
 - A 1080x1440 card deck, optimized for screenshot/Png export.
 - Prev/Next controls, dot navigation, keyboard navigation, and a current-card counter.
 - A `PNG` download button that downloads the pre-exported PNG for the active card.
-- A publish copy panel containing title options, the recommended title, body text, tags/topics, and a full post bundle.
-- Copy buttons for each text block.
-- Clear paths and filenames that are easy for the user to replace with their own screenshots.
+- A `文案` or `COPY` button in the same operation/control area. Clicking it opens a modal with title candidates, recommended title, body text, tags/topics, and a full post bundle.
+- Copy buttons for each text block inside the modal.
+- Placeholder image blocks in the reusable template. Each placeholder must describe what screenshot/image should be placed there, what it should show, and any crop/orientation requirements. Do not bundle real project images into the generic template.
 
 ## Workflow
 
@@ -42,8 +42,9 @@ The HTML workbench should include:
 3. Design the card sequence.
    - Default to 6-9 cards. Eight cards works well for Xiaohongshu.
    - Use one idea per card. Make each card screenshot-worthy on its own.
-   - Mix text-only explanation cards with real product screenshots.
-   - Prefer actual project screenshots over abstract placeholders. When assets are missing, leave obvious replaceable placeholders and tell the user what to capture.
+   - Mix text-only explanation cards with product screenshot slots.
+   - In a concrete project output, prefer actual project screenshots over abstract placeholders. In the reusable template, use descriptive placeholders only.
+   - When assets are missing, leave obvious replaceable placeholders that say what to capture, for example `PLACEHOLDER: Board screenshot showing status columns and task cards`.
 
 4. Build the HTML workbench.
    - Start from `templates/xiaohongshu-workbench.html` when useful.
@@ -51,7 +52,8 @@ The HTML workbench should include:
    - In preview mode, scale and center the card in a narrow stage so the user can inspect it comfortably.
    - Avoid rounded outer card corners when the user wants clean screenshots. Inner screenshots may keep modest radii.
    - Place image captions where they remain readable. For dark screenshots, use light caption pills; for light screenshots, use dark caption pills.
-   - Put publishing copy in the same HTML page, below or beside the deck, with copy buttons.
+   - Put publishing copy in a modal opened from the card operation area, with copy buttons.
+   - Keep the preview page focused on the card deck. Avoid a permanent side panel unless the user explicitly asks for one.
 
 5. Export PNGs.
    - Prefer deterministic browser export over client-side canvas screenshots. Use `scripts/export-cards.js` or an equivalent Chrome/Playwright command.
@@ -90,9 +92,9 @@ Suggested deck structure:
 7. Who it is for and not for.
 8. Install/try link, GitHub/repo screenshot, and call to action.
 
-## Copy Panel Requirements
+## Copy Modal Requirements
 
-The final HTML should expose copyable text blocks directly in the page:
+The final HTML should expose copyable text blocks in a modal launched from the operation/control area:
 
 - `标题备选`
 - `推荐标题`
@@ -100,7 +102,7 @@ The final HTML should expose copyable text blocks directly in the page:
 - `话题标签`
 - `完整发布文案`
 
-Use a small copy button beside each block. Browser clipboard APIs are fine; include a fallback that selects text if clipboard write fails.
+Use a small copy button beside each block. Browser clipboard APIs are fine; include a fallback that selects text if clipboard write fails. The modal should close by clicking `关闭`, clicking the backdrop, or pressing `Escape`.
 
 ## Export Notes
 
@@ -122,7 +124,7 @@ CHROME_BIN="/path/to/chrome" node skills/product-launch-card-kit/scripts/export-
 
 ## Bundled Resources
 
-- `templates/xiaohongshu-workbench.html`: starter HTML workbench with card navigation, PNG links, and copyable publish text.
+- `templates/xiaohongshu-workbench.html`: starter HTML workbench with card navigation, PNG links, a copywriting modal, and descriptive image placeholders.
 - `scripts/export-cards.js`: Chrome-based PNG exporter for `?export=1&card=N`.
 - `references/story-patterns.md`: reusable launch story patterns.
 - `examples/taskr-story-1/`: a worked example based on the Taskr launch deck.
@@ -134,8 +136,8 @@ Before finishing, verify:
 - The HTML opens locally without a build step.
 - The active card can be switched and the `PNG` button points to the matching exported image.
 - Each exported PNG is 1080x1440.
-- The publish copy is visible in the HTML and can be copied.
-- Image captions are readable against their screenshots.
+- The `文案`/`COPY` button opens a modal containing title candidates, body copy, and tags; each block can be copied.
+- The generic template contains only descriptive image placeholders, not real project images.
+- Image captions are readable against their screenshots in concrete generated outputs.
 - No missing local image paths remain.
 - The final answer gives the user the HTML path and the previews directory.
-

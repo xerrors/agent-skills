@@ -36,7 +36,8 @@ The story started from a timely debate about whether agents should output HTML i
 - Use real screenshots whenever possible.
 - Use light caption pills on dark screenshots.
 - Remove outer card radius when the user wants clean screenshots.
-- Put title, body, tags, and full publish copy inside the HTML workbench so the user can copy them directly.
+- Put a `文案` button in the card operation area. It opens a modal containing title candidates, body copy, tags, and a full post bundle with copy buttons.
+- Keep reusable templates image-free: use placeholder screenshot slots that describe what image belongs there. Replace those placeholders with real screenshots only in the concrete project output.
 
 ## Copy Example
 
@@ -62,4 +63,3 @@ Tags:
 ```text
 #AI编程 #ClaudeCode #Codex #Cursor #OpenCode #开源项目 #独立开发者 #效率工具 #项目管理 #Markdown #GitHub #程序员工具 #VibeCoding #AI工具 #个人开发者
 ```
-
