@@ -30,6 +30,13 @@ For `2509.22009` and "GraphSearch", use `2509.GraphSearch` as the prefix when no
 
 Terminology: "arXiv source package" means the paper's LaTeX/source files downloaded from `https://arxiv.org/e-print/<id>` and stored under `<prefix>_source/` inside the paper output directory. "Source code" means the paper's linked implementation repository and belongs under `~/Downloads` or `~/downloads`, not inside the paper output directory.
 
+Prefix rules:
+
+- Derive `<arxiv-prefix>` from the arXiv ID year-month, e.g. `2407` for `2407.12345` and `2509` for `2509.22009`.
+- Derive `<short-name>` from the paper title, project name, or repository name using a short readable PascalCase token such as `GraphSearch`, `DiffusionForPlanning`, or `AgentMemory`. Prefer an established project/repo name when the paper has one.
+- If the final venue is discovered after output files already exist, treat the venue-aware prefix as a rename operation rather than creating a second paper workspace.
+- Ensure the source-code clone directory never resolves to the same path as the paper output directory. If the default clone path would collide, use `~/Downloads/<prefix>-code` or ask the user before cloning.
+
 ## Output directory safety check
 
 Before downloading or creating paper outputs, inspect the current working directory with `pwd` and decide whether it is an appropriate paper workspace root.
@@ -87,6 +94,7 @@ Before downloading or creating paper outputs, inspect the current working direct
      instead of a fenced code block.
    - Preserve figure captions and references to figures. Include the actual images whenever they are present in the LaTeX source package or arXiv HTML and can be referenced locally or by stable URL. When embedding local images in the translation Markdown, prefer relative paths rooted at the translation file's directory, not absolute filesystem paths. Only omit embedded images when using the PDF-only path or when extraction is genuinely unavailable; in that case, preserve the captions and clearly note the limitation.
    - Do not rewrite any paper claims. Mark translator notes or code-informed additions explicitly as added notes, for example `> 译注：...`.
+   - For long papers, keep a lightweight progress marker in `<prefix>_translation_progress.md` or a clearly labeled section at the end of the draft translation. Record completed sections, pending sections, the parsing source used, and known extraction issues. Update or remove this marker when the final translation is complete. This prevents a partial long-paper translation from being mistaken for a finished deliverable after context switches or interruptions.
 
 4. Write the alphaxiv URL or overview into the translation header.
    - Use `https://www.alphaxiv.org/zh/overview/<id>`.
@@ -117,8 +125,10 @@ Before downloading or creating paper outputs, inspect the current working direct
 
 8. Verify outputs before finishing.
    - Confirm the PDF and Chinese Markdown exist in the paper outputs folder.
+   - Confirm the paper output directory and source-code clone directory are distinct paths.
    - Confirm which parsing source was used: arXiv LaTeX source, arXiv HTML, or PDF extraction. If LaTeX source was skipped, record why. If images were omitted, record why.
    - Confirm that the Chinese Markdown is a full sentence-by-sentence translation, not merely a summary or structured notes. Before finalizing, spot-check at least the abstract, introduction, method section, experiments/results section, limitations/ethics if present, and references/appendix handling against the source. If any section is only summarized or omitted, continue translating and do not report the workflow as complete.
+   - Confirm no stale progress marker says sections are still pending. If the translation is intentionally incomplete because the user asked to stop early, say that clearly and do not describe it as complete.
    - Confirm that paragraph boundaries in the Chinese Markdown match the rendered paper rather than raw LaTeX line wrapping.
    - Confirm that `<prefix>_zh.md` starts with the alphaxiv URL and that no standalone alphaxiv artifact file was created.
    - Confirm the source clone location, or explain why no repository was cloned.
