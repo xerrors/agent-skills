@@ -16,19 +16,29 @@ Hard requirement: for any paper-processing request in Chinese, including but not
 
 Use these paths unless the user specifies different ones:
 
-- Paper outputs: `/Users/wenjie/Library/CloudStorage/OneDrive-个人/600-学术文件/IDEA/<arxiv-prefix>[.<venue>].<short-name>`
-- Source-code clones: `/Users/wenjie/Documents/projects/IDEA`
+- Paper outputs: `./<arxiv-prefix>[.<venue>].<short-name>` under the current working directory (`pwd`) where the user invoked the task. Treat the current working directory as the paper workspace root, not the directory where this skill is installed.
+- Source-code clones: `~/Downloads/<arxiv-prefix>[.<venue>].<short-name>` by default. If `~/Downloads` does not exist but `~/downloads` does, use `~/downloads/<arxiv-prefix>[.<venue>].<short-name>` instead.
 
 Prefer filenames like:
 
 - PDF: `<arxiv-prefix>[.<venue>].<short-name>_<full-title>.pdf`
 - Chinese translation: `<arxiv-prefix>[.<venue>].<short-name>_zh.md` and begin it with the alphaxiv URL plus an overview block when available
 - arXiv source package: `<arxiv-prefix>[.<venue>].<short-name>_source/`
-- Source clone directory: `/Users/wenjie/Documents/projects/IDEA/<arxiv-prefix>[.<venue>].<short-name>`
+- Source clone directory: `~/Downloads/<arxiv-prefix>[.<venue>].<short-name>` or `~/downloads/<arxiv-prefix>[.<venue>].<short-name>`
 
 For `2509.22009` and "GraphSearch", use `2509.GraphSearch` as the prefix when no venue is known. Sanitize filenames for macOS and keep the paper's full title in the PDF filename.
 
-Terminology: "arXiv source package" means the paper's LaTeX/source files downloaded from `https://arxiv.org/e-print/<id>` and stored under `<prefix>_source/`. "Source code" means the paper's linked implementation repository and belongs under `/Users/wenjie/Documents/projects/IDEA`.
+Terminology: "arXiv source package" means the paper's LaTeX/source files downloaded from `https://arxiv.org/e-print/<id>` and stored under `<prefix>_source/` inside the paper output directory. "Source code" means the paper's linked implementation repository and belongs under `~/Downloads` or `~/downloads`, not inside the paper output directory.
+
+## Output directory safety check
+
+Before downloading or creating paper outputs, inspect the current working directory with `pwd` and decide whether it is an appropriate paper workspace root.
+
+- Safe by default: a project, notes, research, papers, or similar working directory selected by the user; any directory that already contains one or more processed-paper folders.
+- A processed-paper folder is a sibling directory that looks like an arXiv paper workspace, for example a name matching `<yymm>.<short-name>` or `<yymm>.<VENUE>.<short-name>`, or a directory containing generated files such as `*_zh.md`, `*_source/`, or an arXiv PDF.
+- Unsafe by default: the user's home directory (`~`), filesystem roots, system/application/config directories, broad buckets such as Desktop, Documents, or Downloads when they are not clearly being used as a paper workspace, and any unrelated source-code repository or app project that does not already contain similar processed-paper folders.
+- If the current directory is unsafe or ambiguous and it does not contain similar processed-paper folders, ask the user to confirm or provide a different paper workspace directory, then stop. Do not download the PDF, create the paper output folder, or clone source code until the user confirms.
+- If the current directory is unsafe or ambiguous but already contains similar processed-paper folders, proceed and save the new paper output as a sibling folder in that current directory.
 
 ## Venue-aware naming
 
@@ -36,7 +46,7 @@ Terminology: "arXiv source package" means the paper's LaTeX/source files downloa
 - If a venue is found, insert a short venue token after the arXiv year-month prefix: `<yymm>.<VENUE>.<short-name>`. Examples: `2509.ACL2026.GraphTemp` for a conference, `2509.PR.GraphTemp` for the journal Pattern Recognition.
 - Prefer the canonical venue acronym plus year for conferences and workshops, e.g. `ACL2026`, `ICLR2026`, `NeurIPS2026`, `COLM2025`. Prefer a standard journal abbreviation without year for journals, e.g. `PR`, `TKDE`, `TNNLS`, unless the user asks otherwise.
 - If the venue cannot be found quickly or is only an unverified rumor, omit the venue token and keep `<yymm>.<short-name>`. Briefly note that no final venue was found.
-- When renaming an existing processed paper after discovering a venue, rename the paper output directory, the source-code clone directory if it exists, and files whose names start with the old prefix. Do not rewrite arbitrary user-created notes unless the old prefix appears in obvious generated paths or headings.
+- When renaming an existing processed paper after discovering a venue, rename the paper output directory under the current working directory, the source-code clone directory under `~/Downloads` or `~/downloads` if it exists, and files whose names start with the old prefix. Do not rewrite arbitrary user-created notes unless the old prefix appears in obvious generated paths or headings.
 
 ## Workflow
 
@@ -87,7 +97,7 @@ Terminology: "arXiv source package" means the paper's LaTeX/source files downloa
 
 5. Discover and clone source code when the paper links to it.
    - Check the arXiv abstract page, HTML page, PDF text, author/project pages, and Papers with Code/GitHub links.
-   - Clone the repository into `/Users/wenjie/Documents/projects/IDEA/<arxiv-prefix>.<short-name>`, not into the paper outputs folder.
+   - Clone the repository into `~/Downloads/<arxiv-prefix>[.<venue>].<short-name>` by default, or `~/downloads/<arxiv-prefix>[.<venue>].<short-name>` if that lowercase directory exists and `~/Downloads` does not. Do not clone source code into the paper outputs folder.
    - If the clone directory already exists, inspect it and update only when that is safe and clearly desired by the user. Never overwrite user changes.
    - If no source repository can be found, state that explicitly in the final answer.
 
@@ -123,4 +133,4 @@ Terminology: "arXiv source package" means the paper's LaTeX/source files downloa
 - For tables, prefer clean Markdown tables with corrected headers over source-faithful HTML dumps. If extraction produces malformed headers, duplicated caption rows, or incorrect column labels, fix them before saving the translation instead of preserving the broken structure.
 - Strip source-only LaTeX artifacts such as `\label{...}` from the final Markdown, and never mix inline code ticks into math delimiters such as `$`c`$`.
 - In generated Markdown, prefer portable relative links for local assets, especially figure/image references. The translation should remain movable within the paper output folder without breaking image rendering.
-- Do not download source code into `/Users/wenjie/Library/CloudStorage/OneDrive-个人/600-学术文件/IDEA/论文` or `/Users/wenjie/Library/CloudStorage/OneDrive-个人/600-学术文件/IDEA`; use `/Users/wenjie/Documents/projects/IDEA` for code.
+- Do not use hard-coded personal absolute paths for paper outputs or source-code clones. Paper outputs belong in a new processed-paper folder under the current working directory after the safety check passes. Source-code clones belong under `~/Downloads` or `~/downloads`.
