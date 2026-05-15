@@ -1,0 +1,56 @@
+{
+  "skill_name": "process-arxiv-paper",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "在我当前这个论文工作目录里，处理一下 https://arxiv.org/abs/2407.21783。我要完整中文逐句翻译，保留公式、图表、参考文献；如果论文有 GitHub，也克隆源码并补充 uv 启动和 demo/eval 说明。",
+      "expected_output": "Creates a processed-paper folder under the current working directory, saves the PDF and arXiv source package when available, produces a full sentence-by-sentence Chinese Markdown translation with alphaxiv metadata, clones linked source code outside the paper folder, and adds clearly marked code-informed notes plus uv setup notes.",
+      "files": [],
+      "expectations": [
+        "The agent performs the current-directory safety check before creating output folders.",
+        "The translation artifact is a full sentence-by-sentence Chinese Markdown translation, not a summary.",
+        "The Markdown starts with the alphaxiv URL or a note that the overview could not be fetched.",
+        "The paper output folder and source-code clone folder are distinct paths.",
+        "The final response states which parsing source was used: LaTeX source, arXiv HTML, or PDF extraction."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "我只给你一个项目名 GraphSearch，帮我把对应 arXiv 论文收录一下。当前目录就是我的论文库。要求别只写总结，要把整篇论文翻成中文 Markdown，并把源码里的核心流程对应到论文方法部分。",
+      "expected_output": "Resolves the project name to the correct arXiv paper with clarification if ambiguous, uses the GraphSearch prefix convention when no venue is known, saves the paper outputs in the current directory, completes the full Chinese translation, and inserts source-code-informed pseudocode notes beside the relevant method sections.",
+      "files": [],
+      "expectations": [
+        "The agent verifies the title/authors/project links instead of guessing from a project name alone.",
+        "The prefix follows the GraphSearch convention when the arXiv ID is 2509.22009 and no venue is found.",
+        "The source repository is cloned under Downloads or downloads, not into the paper output folder.",
+        "Any pseudocode or implementation explanation is clearly marked as translator note rather than original paper text.",
+        "The final output distinguishes confirmed run instructions from inferred uv workflow."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "这篇 arXiv 论文我已经处理过一半了，目录里有 2501.OldName/2501.OldName_zh.md 和 2501.OldName_source/。你继续处理，并查一下是不是已经接收到了 ICLR 2026；如果是，顺手按 venue 规则重命名。",
+      "expected_output": "Inspects the existing processed-paper folder, resumes safely without overwriting work, verifies venue status from reliable sources, renames generated folders/files if a final venue is confirmed, and uses a progress marker to avoid treating partial translation as complete.",
+      "files": [],
+      "expectations": [
+        "The agent inspects existing generated files before renaming or continuing work.",
+        "The agent only adds a venue token when a reliable final or accepted venue is found.",
+        "The agent renames generated files with the old prefix but does not rewrite arbitrary user notes.",
+        "The agent tracks completed and pending translation sections while resuming.",
+        "The final response clearly says whether the translation is complete or still partial."
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "我在一个普通 app 项目根目录里，随手让你处理一下 arXiv:2502.12345。先别乱建文件夹，如果当前目录不合适就问我。",
+      "expected_output": "Recognizes that an unrelated app repository is an unsafe or ambiguous paper workspace, asks for confirmation or a different paper workspace directory, and does not download, create paper folders, or clone repositories before confirmation.",
+      "files": [],
+      "expectations": [
+        "The agent checks pwd and surrounding files before writing outputs.",
+        "The agent treats an unrelated app repository as unsafe or ambiguous by default.",
+        "The agent asks for confirmation or a different workspace path before downloading anything.",
+        "The agent does not create the paper output directory before receiving confirmation."
+      ]
+    }
+  ]
+}

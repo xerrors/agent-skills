@@ -1,6 +1,6 @@
 ---
 name: process-arxiv-paper
-description: Find, download, faithfully translate, and analyze arXiv papers from a paper title, project name, arXiv URL/ID, PDF link, or HTML link. Use when the user asks to process, read, organize, translate, or study a paper, especially in Chinese. The default workflow saves the original PDF, produces a sentence-by-sentence Chinese Markdown translation that preserves structure, formulas, tables, figures, citations, and references, prefers arXiv LaTeX source over arXiv HTML over PDF extraction, records alphaxiv context, discovers linked source code when available, adds clearly marked code-informed pseudocode notes, and writes UV/demo/evaluation setup notes.
+description: Use this skill whenever the user wants to process, collect, read, study, organize, translate, or resume work on a specific arXiv paper or arXiv-like research paper, especially in Chinese. Trigger for paper titles, project names, arXiv IDs/URLs/PDF/HTML links, and Chinese requests such as 整理一下, 处理一下, 收录, 读一下, 看一下, 翻译, 逐句翻译, 论文库, arxiv source, 源码对齐, 源码伪代码, or GraphSearch. The workflow resolves the paper, saves PDF/source, creates a full sentence-by-sentence Chinese Markdown translation preserving equations/tables/figures/citations/references, records alphaxiv context, discovers/clones linked code, adds clearly marked code-informed pseudocode notes, and writes uv/demo/evaluation setup notes. Do not use for simple PDF downloads, generic literature surveys, arXiv search lists, submission checklists, non-arXiv PDF table extraction, or unrelated GitHub/uv refactors.
 argument-hint: [paper-title-or-arxiv-url]
 ---
 
@@ -47,6 +47,16 @@ Before downloading or creating paper outputs, inspect the current working direct
 - If the current directory is unsafe or ambiguous and it does not contain similar processed-paper folders, ask the user to confirm or provide a different paper workspace directory, then stop. Do not download the PDF, create the paper output folder, or clone source code until the user confirms.
 - If the current directory is unsafe or ambiguous but already contains similar processed-paper folders, proceed and save the new paper output as a sibling folder in that current directory.
 
+## Existing work and resume behavior
+
+When the user asks to continue, resume, rename, repair, or finish an already processed paper, inspect the existing folder before changing anything.
+
+- Look for existing files such as `<prefix>_zh.md`, `<prefix>_translation_progress.md`, `<prefix>_source/`, downloaded PDFs, companion notes, and any source-code clone with the same prefix.
+- Infer the current state from the files: completed sections, pending sections, parsing source used, whether alphaxiv metadata is present, and whether source-code notes or uv instructions already exist.
+- Continue from the first incomplete or suspicious section instead of retranslating completed sections by default. If existing translation quality is clearly broken, explain the issue and repair the affected section rather than silently overwriting the whole file.
+- When a user asks to rename after a venue is found, perform the rename only after confirming the venue from reliable sources. Rename generated paper files and generated source package folders together; preserve user-created notes unless they obviously contain generated paths or generated headings with the old prefix.
+- If the existing state is unclear, write or update a progress marker before doing more work so the next run can resume safely.
+
 ## Venue-aware naming
 
 - Look up whether the arXiv paper has a final or accepted publication venue such as a conference, workshop, journal, or journal abbreviation. Check arXiv metadata, the PDF/source, project pages, author pages, OpenReview/ACL Anthology/IEEE/ACM/Springer/ScienceDirect pages, and other reliable scholarly indexes when needed.
@@ -60,6 +70,7 @@ Before downloading or creating paper outputs, inspect the current working direct
 1. Resolve the paper to the canonical arXiv abstract page.
    - If the user gives an arXiv URL or ID, normalize it to `https://arxiv.org/abs/<id>`.
    - If the user gives a title or project name, search the web/arXiv and verify the match by title, authors, abstract, and project/repository links. Do not guess if multiple plausible papers remain; ask a concise clarification.
+   - If the user says "this paper", "这个 paper", "这个 repo", or gives only a local repository without enough information to identify a paper, inspect nearby README/project metadata when available. If the paper cannot be identified confidently, ask for the arXiv URL, title, or paper link before creating outputs.
    - Record the arXiv ID, full title, authors, abstract URL, PDF URL, source package URL, HTML URL, and final/accepted venue if found.
 
 2. Download and save the original paper.
