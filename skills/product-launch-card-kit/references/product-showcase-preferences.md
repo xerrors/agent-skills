@@ -1,0 +1,54 @@
+# Product Showcase Preferences
+
+Use these preferences when the user asks for a mature product, open-source project, or version release introduction deck, especially for Xiaohongshu cards. Recommend the `templates/xiaohongshu-product-showcase.html` template when the work is more product promotion than opinion output.
+
+## Design Direction
+
+- Prefer a restrained, bright, technical product-launch style over dark, flashy, or overly decorative layouts.
+- Avoid meaningless decorative English labels and eyebrow text. Keep only real product terms, proper nouns, versions, and protocol names.
+- Use large, confident Chinese titles with normal system fonts. Avoid flamboyant English typography.
+- Keep cards clean: no left/top color block decorations, no unnecessary ornamental sidebars.
+- Use modest radius consistently: screenshots and CTA cards can use `12px`; outer export cards stay square.
+- Use a balanced palette with teal/ink/lime accents on a light technical grid background. Do not let the whole deck become one-note dark blue/purple/beige.
+
+## Cover Preferences
+
+- For product release covers, make the product name the first-viewport signal.
+- Use a large title plus a version badge. Version badge can be dark with white text and rounded pill styling.
+- Put secondary metrics in the header/right area as compact stat cards, not as huge feature blocks.
+- If license matters, use an explicit `MIT License` badge/chip rather than vague "open source" copy.
+- If a hero image is available, reserve a stable 16:9 area and place the real image there. Preserve a clean crop and avoid placeholder copy once the asset exists.
+- Highlight 1-2 critical positioning phrases in the cover description, for example `知识库` or `多租户 Harness`.
+
+## Feature Page Preferences
+
+- Feature pages should have a consistent two-line title rhythm. If one line is too short, add a few words so both lines feel balanced.
+- Put 2-3 keyword highlights per feature page. Use one consistent highlight style; do not over-highlight.
+- Place screenshot interpretation as a single footer-style note below the image area. Do not show both a caption and a keyword/footer bar.
+- Keep screenshot annotations/captions below screenshots. Never overlap annotations on top of screenshots unless the user explicitly asks.
+- Preserve original screenshot aspect ratio. Use `object-fit: contain`; do not crop product UI screenshots.
+- Add a small radius to screenshots, normally `12px`.
+- Feature bullets should read like screenshot interpretation, not generic capability marketing. Keep them concise and visually even.
+
+## Overview / Upgrade Map
+
+- For a version-upgrade overview page, prefer an 8-cell grid:
+  - `0.7 Beta` or the version card occupies the upper-left two cells.
+  - Update items 01/02 occupy the upper-right cells.
+  - Update items 03/04 occupy the lower-left cells.
+  - Update items 05/06 occupy the lower-right cells.
+- Give each update item a similar amount of text. Avoid a mix where some descriptions are one short line and others wrap awkwardly.
+- Use fixed row heights and explicit grid placement so the visual order is stable.
+
+## CTA / Final Page
+
+- Avoid overly direct third-party-platform wording when the target platform may penalize obvious traffic diversion.
+- Prefer discussion-oriented wording: "欢迎在评论区一起讨论需求、经验和踩坑。"
+- If mentioning a repository, keep it subtle, for example a small `xerrors/Yuxi` chip rather than a large "go star" command.
+- Avoid repeated sentence openings such as two consecutive "如果".
+
+## Copy Pitfalls
+
+- Do not use "不是……而是……" unless the user asks for a contrast. Prefer direct positioning.
+- Avoid "正式发布" for beta/open-source release decks unless the user explicitly says it is a formal release.
+- Remove unsupported future integrations from the deck if the user asks to focus only on currently supported sources.
