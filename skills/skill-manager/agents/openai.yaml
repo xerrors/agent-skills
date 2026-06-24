@@ -1,0 +1,4 @@
+interface:
+  display_name: "Skill Manager"
+  short_description: "Update skills and configure agent links"
+  default_prompt: "Use $skill-manager to update an agent skill and configure its symlinks."

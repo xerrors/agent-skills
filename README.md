@@ -72,3 +72,6 @@ Restart Codex after installing or updating skills.
   for apps, open-source projects, agent skills, plugins, and developer tools,
   including screenshot-ready cards, PNG export/download, titles, body copy, and
   tags.
+- `yuxi-manage`: manage the `xerrors/Yuxi` GitHub project, including star
+  growth reports, trend charts, current PR status, open PR overviews, review
+  state, CI/check signals, and latest PR dynamics.

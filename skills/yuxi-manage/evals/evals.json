@@ -1,0 +1,23 @@
+{
+  "skill_name": "yuxi-manage",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "看一下 Yuxi 当前 PR 的状态，告诉我 review、CI、最近动态和下一步该做什么。",
+      "expected_output": "A compact live PR report for xerrors/Yuxi with PR identity, state, review decision, concise check status, at most three recent activity items, updated time, and next action.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "给我一个 Yuxi 最新 PR 动态汇总，不一定是当前分支，先看 open PR。",
+      "expected_output": "A compact open PR overview for xerrors/Yuxi with title, review state, concise check status, and update timestamps, omitting author, branch, and merge state unless they explain a blocker.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "生成今天的 Yuxi stars 日报和趋势图。",
+      "expected_output": "A Beijing-time star growth summary for xerrors/Yuxi, plus a generated trend chart path or rendered chart reference.",
+      "files": []
+    }
+  ]
+}
