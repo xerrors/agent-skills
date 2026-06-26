@@ -1,6 +1,6 @@
 ---
 name: yuxi-manage
-description: Manage and report on the xerrors/Yuxi GitHub project. Use this skill whenever the user asks about Yuxi stars, GitHub star growth, daily Yuxi reports, the current PR, open PRs, PR review status, CI/check status, merge readiness, latest PR activity, or what changed recently in the Yuxi repository.
+description: Manage and report on the xerrors/Yuxi GitHub project. Use this skill whenever the user asks about Yuxi stars, GitHub star growth, daily Yuxi reports, the current PR, open PRs, PR review status, CI/check status, merge readiness, latest PR activity, roadmap updates, or what changed recently in the Yuxi repository.
 ---
 
 # Yuxi Manage
@@ -12,6 +12,8 @@ repository. The skill has two core areas:
   the daily trend chart.
 - PR tracking: inspect the current PR or open PRs and report only high-signal
   review, check, recent activity, freshness, and next-action information.
+- Roadmap updates: update the public roadmap from user-provided items and
+  selected GitHub issues while preserving the existing roadmap structure.
 
 Default to Chinese output unless the user asks for another language. Treat words
 like "current", "latest", "today", "now", "recent", "当前", "最新", "今天",
@@ -20,6 +22,7 @@ and "动态" as requiring live GitHub data, not memory.
 ## Defaults
 
 - Default repository: `xerrors/Yuxi`.
+- Default roadmap path: `docs/develop-guides/roadmap.md`.
 - Default timezone: Beijing time / CST / UTC+8.
 - Prefer authenticated `gh` commands for PR work because they include private
   auth state, current-branch context, review data, and check data.
@@ -94,6 +97,50 @@ blocking, such as conflicts, behind branch, or blocked merge queue state.
 Do not overstate merge readiness. If data is missing, say which signal could not
 be read instead of guessing.
 
+## Roadmap Updates
+
+Use roadmap updates when the user asks to update, refresh, sync, or maintain the
+Yuxi roadmap, including requests to add the user's own items and items derived
+from issues.
+
+Before editing, gather live context:
+
+```bash
+gh repo view xerrors/Yuxi --json defaultBranchRef,url
+gh issue list --repo xerrors/Yuxi --state open --label roadmap --limit 100 --json number,title,labels,updatedAt,url
+gh issue list --repo xerrors/Yuxi --state open --label feat --limit 100 --json number,title,labels,updatedAt,url
+```
+
+Read the current roadmap before changing it:
+
+```bash
+gh api repos/xerrors/Yuxi/contents/docs/develop-guides/roadmap.md --jq .content | base64 --decode
+```
+
+If the user provides explicit roadmap items, treat those as authoritative. For
+issue-derived items, prefer open issues labeled `roadmap`; also inspect relevant
+`feat` issues when the user asks to pull from issues more broadly. Do not add
+ordinary bug or question issues to the roadmap unless the user explicitly
+selects them or the issue already has a roadmap signal.
+
+Editing rules:
+
+- Keep the existing sections and tone unless the user asks to reorganize them:
+  `看板`, grouped topic headings such as `知识库` / `智能体` / `其他`, `仅设想`,
+  and `Bugs`.
+- Add source links for issue-derived items using `([#123](https://github.com/xerrors/Yuxi/issues/123))`.
+- Avoid duplicates by matching both issue number and near-identical titles.
+- Preserve existing badges such as `<Badge text="v0.7.1" />`; add badges only
+  when the user provides a target version or the existing roadmap context makes
+  the target unambiguous.
+- Convert issue titles into roadmap-style action items by removing prefixes like
+  `Feat:`, `Error:`, and `Question:` and rewriting only enough to fit the
+  roadmap's wording.
+- For bug issues selected for the roadmap, place them under `### Bugs`; for
+  feature and experience work, choose the closest existing topic group.
+- After editing, show the changed files and a concise summary. If asked to
+  commit or push roadmap changes, ask for explicit confirmation first.
+
 ## Response Shape
 
 For a PR status request, prefer this compact structure and keep ordinary reports
@@ -117,6 +164,16 @@ around 8-10 lines:
 For a star report, include the text summary and show or link the generated chart
 when possible.
 
+For a roadmap update, summarize:
+
+```markdown
+## Roadmap Update
+- Added: ...
+- Updated: ...
+- Skipped: ... (with reason, when relevant)
+- Source issues: #123, #456
+```
+
 ## Pitfalls
 
 - GitHub data changes quickly. Always re-query for latest/current/today requests.
@@ -126,3 +183,6 @@ when possible.
 - Anonymous GitHub API calls are rate-limited. Prefer `gh` when possible.
 - The star chart uses Beijing-day cutoffs, so "today" is a partial day until
   24:00 CST.
+- Roadmap issues are not always labeled consistently. If a user asks to include
+  issues, report which label filters were checked and which issues were skipped
+  instead of silently guessing.
