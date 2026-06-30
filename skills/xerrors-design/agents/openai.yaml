@@ -1,0 +1,4 @@
+interface:
+  display_name: "Xerrors Design"
+  short_description: "Xerrors design preferences and routing"
+  default_prompt: "Use $xerrors-design to apply Xerrors design preferences while building or reviewing a product UI."
