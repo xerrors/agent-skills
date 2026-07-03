@@ -22,7 +22,13 @@
     {
       "id": 4,
       "prompt": "更新一下 Yuxi roadmap，把我列的事项加进去，同时从带 roadmap 标签的 issue 里补充遗漏项。",
-      "expected_output": "A roadmap update workflow for xerrors/Yuxi that reads docs/develop-guides/roadmap.md, checks live roadmap-labeled issues, merges user-provided and issue-derived items without duplicates, keeps issue source links, and summarizes added, updated, skipped, and source issues.",
+      "expected_output": "A roadmap update workflow for xerrors/Yuxi that treats roadmap as the maintainer-only GitHub Project by default, checks existing project items and live roadmap-labeled issues, creates missing draft project items without duplicates, keeps issue source links in item bodies, and summarizes added, updated, skipped, and source issues.",
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "把这个条目更新到 roadmap：支持知识库文件树视图。",
+      "expected_output": "The skill should update the Yuxi GitHub Project roadmap, not docs/develop-guides/roadmap.md, because the prompt does not explicitly name roadmap.md.",
       "files": []
     }
   ]

@@ -1,6 +1,6 @@
 ---
 name: yuxi-manage
-description: Manage and report on the xerrors/Yuxi GitHub project. Use this skill whenever the user asks about Yuxi stars, GitHub star growth, daily Yuxi reports, the current PR, open PRs, PR review status, CI/check status, merge readiness, latest PR activity, roadmap updates, or what changed recently in the Yuxi repository.
+description: Manage and report on the xerrors/Yuxi GitHub project. Use this skill whenever the user asks about Yuxi stars, GitHub star growth, daily Yuxi reports, the current PR, open PRs, PR review status, CI/check status, merge readiness, latest PR activity, GitHub Project roadmap updates, or what changed recently in the Yuxi repository.
 ---
 
 # Yuxi Manage
@@ -12,8 +12,8 @@ repository. The skill has two core areas:
   the daily trend chart.
 - PR tracking: inspect the current PR or open PRs and report only high-signal
   review, check, recent activity, freshness, and next-action information.
-- Roadmap updates: update the public roadmap from user-provided items and
-  selected GitHub issues while preserving the existing roadmap structure.
+- Roadmap updates: update the maintainer-only GitHub Project roadmap from
+  user-provided items and selected GitHub issues by default.
 
 Default to Chinese output unless the user asks for another language. Treat words
 like "current", "latest", "today", "now", "recent", "当前", "最新", "今天",
@@ -22,7 +22,10 @@ and "动态" as requiring live GitHub data, not memory.
 ## Defaults
 
 - Default repository: `xerrors/Yuxi`.
-- Default roadmap path: `docs/develop-guides/roadmap.md`.
+- Default roadmap Project owner: `xerrors`.
+- Default roadmap Project number: `2`.
+- Default roadmap Project URL: `https://github.com/users/xerrors/projects/2`.
+- Default roadmap document path: `docs/develop-guides/roadmap.md`.
 - Default timezone: Beijing time / CST / UTC+8.
 - Prefer authenticated `gh` commands for PR work because they include private
   auth state, current-branch context, review data, and check data.
@@ -103,18 +106,31 @@ Use roadmap updates when the user asks to update, refresh, sync, or maintain the
 Yuxi roadmap, including requests to add the user's own items and items derived
 from issues.
 
-Before editing, gather live context:
+Interpretation rule:
+
+- If the user says "update roadmap", "更新 roadmap", "同步路线图", or similar
+  without explicitly naming `roadmap.md`, update the GitHub Project, not the
+  Markdown file.
+- Edit `docs/develop-guides/roadmap.md` only when the user explicitly says to
+  update that file, asks to change the public docs page, or provides a direct
+  `roadmap.md` path.
+- If both Project and `roadmap.md` are requested, update the Project first, then
+  make the smallest matching document change.
+
+Before changing the Project, gather live context:
 
 ```bash
 gh repo view xerrors/Yuxi --json defaultBranchRef,url
+gh project list --owner xerrors --format json --limit 30
+gh project item-list 2 --owner xerrors --format json --limit 100
 gh issue list --repo xerrors/Yuxi --state open --label roadmap --limit 100 --json number,title,labels,updatedAt,url
 gh issue list --repo xerrors/Yuxi --state open --label feat --limit 100 --json number,title,labels,updatedAt,url
 ```
 
-Read the current roadmap before changing it:
+Create missing roadmap items as GitHub Project draft issues:
 
 ```bash
-gh api repos/xerrors/Yuxi/contents/docs/develop-guides/roadmap.md --jq .content | base64 --decode
+gh project item-create 2 --owner xerrors --title "<item title>" --body "<item body>" --format json
 ```
 
 If the user provides explicit roadmap items, treat those as authoritative. For
@@ -123,12 +139,36 @@ issue-derived items, prefer open issues labeled `roadmap`; also inspect relevant
 ordinary bug or question issues to the roadmap unless the user explicitly
 selects them or the issue already has a roadmap signal.
 
-Editing rules:
+Project item rules:
+
+- Use draft items unless the user explicitly asks to create repository issues.
+- Avoid duplicates by matching existing Project item titles, issue numbers, and
+  near-identical wording.
+- Include `来源：用户提供`, `来源：GitHub issue`, or
+  `来源：docs/develop-guides/roadmap.md` in the body when known.
+- Add issue links for issue-derived items using
+  `https://github.com/xerrors/Yuxi/issues/123`.
+- Preserve useful classification in the body, such as `分类：知识库`,
+  `分类：智能体`, `分类：Bugs`, or target versions like `版本：v0.7.1`.
+- Convert issue titles into concise roadmap item titles by removing prefixes
+  like `Feat:`, `Error:`, and `Question:` and rewriting only enough to fit the
+  roadmap's wording.
+- If GitHub Project scopes are missing, ask the user to run
+  `gh auth refresh -h github.com --scopes read:project,project`.
+
+Only when explicitly editing `roadmap.md`, use these document rules:
+
+- Read the current document before changing it:
+
+```bash
+gh api repos/xerrors/Yuxi/contents/docs/develop-guides/roadmap.md --jq .content | base64 --decode
+```
 
 - Keep the existing sections and tone unless the user asks to reorganize them:
   `看板`, grouped topic headings such as `知识库` / `智能体` / `其他`, `仅设想`,
   and `Bugs`.
-- Add source links for issue-derived items using `([#123](https://github.com/xerrors/Yuxi/issues/123))`.
+- Add source links for issue-derived items using
+  `([#123](https://github.com/xerrors/Yuxi/issues/123))`.
 - Avoid duplicates by matching both issue number and near-identical titles.
 - Preserve existing badges such as `<Badge text="v0.7.1" />`; add badges only
   when the user provides a target version or the existing roadmap context makes
@@ -139,7 +179,7 @@ Editing rules:
 - For bug issues selected for the roadmap, place them under `### Bugs`; for
   feature and experience work, choose the closest existing topic group.
 - After editing, show the changed files and a concise summary. If asked to
-  commit or push roadmap changes, ask for explicit confirmation first.
+  commit or push document changes, ask for explicit confirmation first.
 
 ## Response Shape
 
@@ -168,6 +208,7 @@ For a roadmap update, summarize:
 
 ```markdown
 ## Roadmap Update
+- Project: https://github.com/users/xerrors/projects/2
 - Added: ...
 - Updated: ...
 - Skipped: ... (with reason, when relevant)
