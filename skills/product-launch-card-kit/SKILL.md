@@ -1,7 +1,6 @@
 ---
 name: product-launch-card-kit
-description: Create a complete social launch kit for an app, open-source project, agent skill, plugin, developer tool, or small product. Use this skill whenever the user asks for Xiaohongshu/小红书 launch posts, social media cards, video covers, animated launch openings, publishable HTML, PNG export cards, product launch copy, titles, captions, hashtags/tags, or asks to turn a product story into a screenshot-ready deck. The default card deliverable is a single HTML workbench with card navigation and a visible copywriting panel; cover-design deliverables use an HTML preview page first and export PNG/MP4 only when needed. Use Remotion for production video/opening generation.
-argument-hint: [project-or-product-to-launch]
+description: Create a social launch kit for an app, open-source project, agent skill, plugin, developer tool, or small product. Use for Xiaohongshu/小红书 launch posts, social media cards, video covers, animated launch openings, publishable HTML, PNG export cards, product launch copy, titles, captions, hashtags/tags, or turning a product story into a screenshot-ready deck. Default output is one HTML workbench with card navigation and a visible copywriting panel; cover design starts with HTML preview and exports PNG/MP4 only when needed. Use Remotion for production video/opening generation.
 ---
 
 # Product Launch Card Kit
