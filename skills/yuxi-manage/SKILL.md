@@ -1,12 +1,12 @@
 ---
 name: yuxi-manage
-description: Manage and report on the xerrors/Yuxi GitHub project. Use this skill whenever the user asks about Yuxi stars, GitHub star growth, daily Yuxi reports, the current PR, open PRs, PR review status, CI/check status, merge readiness, latest PR activity, GitHub Project roadmap updates, or what changed recently in the Yuxi repository.
+description: Manage development work and reporting for the xerrors/Yuxi GitHub project. Use this skill whenever working inside the Yuxi project, starting or finishing a Yuxi development task, updating the Yuxi GitHub Project, or asking about Yuxi stars, PRs, CI, reviews, roadmap, or recent repository activity.
 ---
 
 # Yuxi Manage
 
 Use this skill to answer operational questions about the `xerrors/Yuxi` GitHub
-repository. The skill has two core areas:
+repository and its maintainer GitHub Project. The skill has four core areas:
 
 - Star tracking: fetch real-time star counts, summarize growth, and generate
   the daily trend chart.
@@ -14,6 +14,9 @@ repository. The skill has two core areas:
   review, check, recent activity, freshness, and next-action information.
 - Roadmap updates: update the maintainer-only GitHub Project roadmap from
   user-provided items and selected GitHub issues by default.
+- Development project management: when starting, planning, or completing Yuxi
+  development work, keep the GitHub Project item current with the task, design
+  plan, implementation status, completion date, test results, and screenshots.
 
 Default to Chinese output unless the user asks for another language. Treat words
 like "current", "latest", "today", "now", "recent", "当前", "最新", "今天",
@@ -26,6 +29,8 @@ and "动态" as requiring live GitHub data, not memory.
 - Default roadmap Project number: `2`.
 - Default roadmap Project URL: `https://github.com/users/xerrors/projects/2`.
 - Default roadmap document path: `docs/develop-guides/roadmap.md`.
+- Default development project: the same maintainer GitHub Project unless the
+  user provides a different Project URL or number.
 - Default timezone: Beijing time / CST / UTC+8.
 - Prefer authenticated `gh` commands for PR work because they include private
   auth state, current-branch context, review data, and check data.
@@ -33,6 +38,81 @@ and "动态" as requiring live GitHub data, not memory.
   calls when `gh` is unavailable or when the star script is used.
 - If the user provides another repo, PR URL, or PR number, follow that explicit
   target instead of the default.
+
+## Development Project Management
+
+Use development project management whenever the agent is working in a Yuxi
+checkout or the user asks to create, plan, implement, track, finish, verify, or
+ship a Yuxi development task. This includes implicit requests such as "帮我开发
+Yuxi 的 X", "实现这个 Yuxi 功能", "修一下 Yuxi 的 bug", or "这个任务做完了".
+
+Before creating or updating task items, gather live Project context:
+
+```bash
+gh repo view xerrors/Yuxi --json defaultBranchRef,url
+gh project view 2 --owner xerrors --format json
+gh project field-list 2 --owner xerrors --format json
+gh project item-list 2 --owner xerrors --format json --limit 100
+```
+
+When starting a new task:
+
+- First search existing Project items for the same title, linked issue/PR, or
+  near-identical scope. Update the existing item instead of creating a duplicate.
+- If no item exists, create a GitHub Project draft item before or alongside the
+  implementation work:
+
+```bash
+gh project item-create 2 --owner xerrors --title "<task title>" --body "<task body>" --format json
+```
+
+- The item body should include the problem, intended outcome, source request,
+  and any links to related issues, PRs, docs, screenshots, or local design notes.
+- If there is a development or design plan, write it into the Project item body
+  before major implementation begins. Keep it concrete: scope, approach,
+  affected areas, verification plan, and known risks.
+- If the Project has a Status field, set the item to the appropriate in-progress
+  state after resolving field and option IDs from `gh project field-list`.
+
+When updating an active task:
+
+- Keep the Project item as the source of operational truth. Add meaningful
+  changes to the body instead of scattering plan/status only in chat.
+- Link the PR once one exists. Include branch or PR links only when they help
+  continue the work.
+- If the task changes scope, update the design plan and note the reason.
+
+When completing a task:
+
+- Mark the Project item as done/completed if the Project has a matching Status
+  option. Resolve field and option IDs from `gh project field-list`, then use
+  `gh project item-edit`.
+- Add or update a completion section in the Project item body with:
+  `完成日期：YYYY-MM-DD` using Beijing date, `测试结果：...`, and a concise
+  implementation summary.
+- If screenshots exist, attach or link them in the item body. Prefer durable
+  GitHub issue/PR/comment/asset URLs; if only local screenshots exist, mention
+  the local path and ask before uploading elsewhere.
+- Do not mark a task complete when tests are missing or failing. Instead update
+  status and body with the blocker, missing verification, and next action.
+
+Useful edit patterns:
+
+```bash
+# Edit a draft item's title/body.
+gh project item-edit --id <item-id> --title "<title>" --body "<updated body>" --format json
+
+# Set a Project field such as Status, Completion Date, or Test Results.
+gh project item-edit --id <item-id> --project-id <project-id> --field-id <field-id> --single-select-option-id <option-id>
+gh project item-edit --id <item-id> --project-id <project-id> --field-id <field-id> --date "YYYY-MM-DD"
+gh project item-edit --id <item-id> --project-id <project-id> --field-id <field-id> --text "<test results>"
+```
+
+If GitHub Project scopes are missing, ask the user to run:
+
+```bash
+gh auth refresh -h github.com --scopes read:project,project
+```
 
 ## Star Tracking
 

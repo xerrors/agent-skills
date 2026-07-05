@@ -30,6 +30,12 @@
       "prompt": "把这个条目更新到 roadmap：支持知识库文件树视图。",
       "expected_output": "The skill should update the Yuxi GitHub Project roadmap, not docs/develop-guides/roadmap.md, because the prompt does not explicitly name roadmap.md.",
       "files": []
+    },
+    {
+      "id": 6,
+      "prompt": "我在 Yuxi 项目里要开发一个新的知识库导入任务，先帮我建任务并记录设计计划；做完后把状态、完成日期、测试结果和截图都补到项目里。",
+      "expected_output": "The skill should trigger because development is happening inside the Yuxi project, create or update a matching GitHub Project item before implementation, write the design plan into the item body, and on completion update status, Beijing completion date, test results, and screenshot links or paths without creating duplicates.",
+      "files": []
     }
   ]
 }
