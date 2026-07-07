@@ -2,6 +2,7 @@
 """Generate daily star growth chart for xerrors/Yuxi repository.
 Uses Beijing time (CST, UTC+8) for daily cutoffs.
 For incomplete current day, shows real-time data.
+Uses authenticated gh CLI for reliable data fetching.
 """
 
 import json
@@ -12,30 +13,49 @@ from datetime import datetime, timedelta, timezone
 from collections import Counter
 
 REPO = "xerrors/Yuxi"
-PROXY = "http://127.0.0.1:7890"
 OUTPUT_PATH = "/tmp/yuxi_stars_chart.png"
 DAYS = 7
 CST = timezone(timedelta(hours=8))
 
-
-def fetch_stargazers(page):
+def fetch_stargazers_by_gh():
+    # Use gh api to fetch stargazers with pagination
     cmd = [
-        "curl", "-s", "-x", PROXY,
-        "-H", "Accept: application/vnd.github.v3.star+json",
-        f"https://api.github.com/repos/{REPO}/stargazers?per_page=100&page={page}"
+        "gh", "api",
+        f"repos/{REPO}/stargazers",
+        "--header", "Accept: application/vnd.github.v3.star+json",
+        "--paginate",
+        "-q", ".[].starred_at"
     ]
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=15)
-    return json.loads(result.stdout)
-
+    # Configure proxy for subprocess just in case
+    env = os.environ.copy()
+    env["http_proxy"] = "http://127.0.0.1:7890"
+    env["https_proxy"] = "http://127.0.0.1:7890"
+    
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=60, env=env)
+    if result.returncode != 0:
+        raise RuntimeError(f"gh api error: {result.stderr}")
+    
+    # Each line represents a starred_at timestamp
+    timestamps = [line.strip() for line in result.stdout.split('\n') if line.strip()]
+    return timestamps
 
 def get_total_stars():
-    cmd = ["curl", "-s", "-x", PROXY, f"https://api.github.com/repos/{REPO}"]
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=15)
-    return json.loads(result.stdout)["stargazers_count"]
-
+    cmd = ["gh", "api", f"repos/{REPO}", "-q", ".stargazers_count"]
+    env = os.environ.copy()
+    env["http_proxy"] = "http://127.0.0.1:7890"
+    env["https_proxy"] = "http://127.0.0.1:7890"
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=15, env=env)
+    if result.returncode != 0:
+        raise RuntimeError(f"gh api error: {result.stderr}")
+    return int(result.stdout.strip())
 
 def main():
-    total_now = get_total_stars()
+    try:
+        total_now = get_total_stars()
+    except Exception as e:
+        print(f"Error getting total stars: {e}", file=sys.stderr)
+        sys.exit(1)
+        
     now = datetime.now(CST)
 
     # Current day 00:00 CST
@@ -43,22 +63,21 @@ def main():
     # Start of the reporting window (DAYS ago at 00:00 CST)
     window_start = today_start - timedelta(days=DAYS - 1)
 
-    # Calculate how many pages we need (rough estimate: fetch enough to cover the window)
-    # Each page = 100 stars. Fetch DAYS * generous daily max / 100 pages
-    last_page = (total_now // 100) + 1
-    pages_to_fetch = list(range(max(1, last_page - 2), last_page + 1))
+    # Collect all stars
+    try:
+        all_timestamps = fetch_stargazers_by_gh()
+    except Exception as e:
+        print(f"Error fetching stargazers: {e}", file=sys.stderr)
+        sys.exit(1)
 
-    # Collect all stars in the window
     all_star_times = []
-    for page in pages_to_fetch:
+    for ts in all_timestamps:
         try:
-            data = fetch_stargazers(page)
-            for s in data:
-                starred_at = datetime.fromisoformat(s["starred_at"].replace("Z", "+00:00"))
-                if starred_at >= window_start:
-                    all_star_times.append(starred_at)
-        except Exception as e:
-            print(f"Error fetching page {page}: {e}", file=sys.stderr)
+            starred_at = datetime.fromisoformat(ts.replace("Z", "+00:00"))
+            if starred_at >= window_start:
+                all_star_times.append(starred_at)
+        except Exception:
+            continue
 
     # Group by CST date
     daily = Counter()
@@ -86,8 +105,6 @@ def main():
         new_stars.append(daily.get(date_str, 0))
 
     # Calculate cumulative: work backwards from total_now
-    # For today, cumulative = total_now (real-time)
-    # For past days, subtract that day's new stars
     cumulative = []
     running = total_now
     for i in range(len(dates)):
@@ -111,7 +128,7 @@ def main():
     print(f"Past {DAYS} days total: +{week_total}")
     print()
     for date, label, new, cum in zip(dates, labels, new_stars, cumulative):
-        bar = "█" * (new // 3) if new > 0 else ""
+        bar = "█" * (new // 2) if new > 0 else ""
         is_today = (date == now.strftime("%Y-%m-%d"))
         marker = " ← real-time" if is_today else ""
         print(f"  {date}  {cum:>5}  +{new:>2}  {bar}{marker}")
@@ -200,7 +217,6 @@ def main():
 
     plt.tight_layout()
     plt.savefig(OUTPUT_PATH, dpi=150, facecolor=bg_color, edgecolor='none', bbox_inches='tight')
-
 
 if __name__ == "__main__":
     main()
