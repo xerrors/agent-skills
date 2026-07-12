@@ -228,7 +228,6 @@ ffprobe -v error -select_streams v:0 -show_entries stream=width,height,r_frame_r
 - `DESIGN.md`: compact design contract for portrait composition, title consistency, typography, screenshot ratios, and click-to-replace screenshot behavior.
 - `resources/product-showcase-tokens.css`: reusable color, typography, spacing, header, title, body, and supporting-note primitives.
 - `resources/icons/github-mark.svg`: reusable GitHub repository identity icon.
-- `examples/taskr-story-1/`: a worked example based on the Taskr launch deck.
 
 ## Quality Bar
 
