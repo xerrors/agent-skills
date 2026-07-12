@@ -34,6 +34,7 @@ This document is the design contract for product updates, changelog decks, and v
 - The selected image replaces the current screenshot immediately and participates in PNG export.
 - Replacements are session-scoped by default; do not write large data URLs to local storage.
 - Disable the picker in export mode so deterministic capture is unaffected.
+- Reuse `resources/image-picker.js` and the replaceable-image states in `resources/product-showcase-tokens.css` when building a new workbench.
 
 ## Implementation
 

@@ -83,6 +83,14 @@ Overview, feature, minor-update, compatibility, and closing cards are peers. The
 - Keep export behavior deterministic and separate preview-only controls from card content.
 - Prefer a small amount of direct HTML/CSS/JS over a framework when the artifact is a standalone card workbench.
 
+## Replaceable Screenshots
+
+- In preview mode, every screenshot or image placeholder should be clickable and open a local file picker.
+- Accept PNG, JPEG, WebP, and GIF. Replace the selected image immediately and use it in subsequent PNG export.
+- Keep replacement data session-scoped by default; do not store large data URLs in local storage.
+- Disable selection behavior in export mode.
+- Reuse `resources/image-picker.js` or an equivalent concise implementation. Give replaceable images an obvious hover state without adding permanent decorative labels.
+
 ## Final Sweep
 
 - Read every card at preview scale, not only at 1080px.
@@ -91,3 +99,4 @@ Overview, feature, minor-update, compatibility, and closing cards are peers. The
 - Confirm Chinese title line-height is approximately `1.08-1.18`; avoid both collision and loose poster-like leading.
 - Confirm no decorative meta label or footer slogan remains.
 - Confirm every screenshot has a reason to exist and every card has one dominant idea.
+- Confirm clicking each replaceable screenshot opens the picker and the selected image appears in export.

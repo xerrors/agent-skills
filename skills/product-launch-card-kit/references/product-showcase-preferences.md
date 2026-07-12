@@ -26,7 +26,7 @@ Use these preferences when the user asks for a mature product, open-source proje
 
 - Feature pages should have a consistent two-line title rhythm. If one line is too short, add a few words so both lines feel balanced.
 - Put 2-3 keyword highlights per feature page. Use one consistent highlight style; do not over-highlight.
-- Put screenshot interpretation directly below or beside the screenshot as a factual supporting note. Do not turn it into a detached footer slogan, and do not show both a caption and a keyword/footer bar.
+- Put screenshot interpretation directly below the screenshot as a factual supporting note on portrait cards. Do not place the main explanation beside the screenshot, turn it into a detached footer slogan, or show both a caption and a keyword/footer bar.
 - Keep screenshot annotations/captions below screenshots. Never overlap annotations on top of screenshots unless the user explicitly asks.
 - Preserve original screenshot aspect ratio. Use `object-fit: contain`; do not crop product UI screenshots.
 - Add a small radius to screenshots, normally `12px`.

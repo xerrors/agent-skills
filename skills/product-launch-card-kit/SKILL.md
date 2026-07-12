@@ -128,6 +128,7 @@ Video opening requirements:
    - Enforce a `28px` minimum for all designed card text except code and terminal output. Keep every screenshot reservation between `16:9` and `9:16`, inclusive, and set Chinese headline line-height deliberately within roughly `1.08-1.18`.
    - For portrait cards such as `3:4` or `9:16`, use a top-to-bottom narrative. Do not place the main copy and main screenshot in left/right columns. Stack title → explanation/data → screenshot; reserve side-by-side composition for landscape canvases.
    - Treat every non-cover card as the same editorial level. Overview, feature, minor-update, compatibility, and closing pages must use one identical main-title size, line-height, and weight. Never shrink a feature-page title to fit denser content; edit the copy or layout instead.
+   - Make screenshots and image placeholders clickable in preview mode. Let the user choose a local PNG/JPEG/WebP/GIF, replace the image for the current session, and include it in export. Disable the picker in export mode.
    - Reuse `resources/product-showcase-tokens.css` and icons from `resources/icons/` when they fit the project. Copy required resources into the concrete launch output so the HTML remains self-contained and portable.
    - Put publishing copy in a visible side panel on wide screens, with copy buttons.
    - On narrow screens, stack the card preview first and the copy panel below it.
@@ -228,6 +229,7 @@ ffprobe -v error -select_streams v:0 -show_entries stream=width,height,r_frame_r
 - `DESIGN.md`: compact design contract for portrait composition, title consistency, typography, screenshot ratios, and click-to-replace screenshot behavior.
 - `resources/product-showcase-tokens.css`: reusable color, typography, spacing, header, title, body, and supporting-note primitives.
 - `resources/icons/github-mark.svg`: reusable GitHub repository identity icon.
+- `resources/image-picker.js`: reusable session-scoped click-to-replace image picker for preview workbenches.
 
 ## Quality Bar
 
@@ -241,6 +243,7 @@ Before finishing, verify:
 - For video openings, the production render uses Remotion and the final MP4 metadata matches the requested duration, ratio, resolution, and fps.
 - The copywriting panel is visible in the HTML, contains title candidates, body copy, and tags, and each block can be copied.
 - The generic template contains only descriptive image placeholders, not real project images.
+- Every screenshot placeholder is clickable in preview mode, accepts a local replacement image, and uses that replacement in export.
 - Image captions are readable against their screenshots in concrete generated outputs.
 - No missing local image paths remain.
 - The final answer gives the user the HTML path and the previews directory.
