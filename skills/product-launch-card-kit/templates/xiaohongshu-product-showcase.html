@@ -18,6 +18,9 @@
       --shadow: 0 20px 54px rgba(18, 26, 32, 0.12);
       --card-w: 1080px;
       --card-h: 1440px;
+      --font-cn: "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
+      --font-latin: "Geist", "Helvetica Neue", Arial, sans-serif;
+      --font-mono: "SFMono-Regular", "JetBrains Mono", Consolas, monospace;
     }
 
     * { box-sizing: border-box; }
@@ -26,7 +29,7 @@
       margin: 0;
       background: #edf3f3;
       color: var(--ink);
-      font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", "Helvetica Neue", Arial, sans-serif;
+      font-family: var(--font-cn);
       letter-spacing: 0;
     }
 
@@ -143,7 +146,7 @@
       z-index: 1;
       height: 100%;
       display: grid;
-      grid-template-rows: auto 1fr auto;
+      grid-template-rows: auto 1fr;
       gap: 38px;
     }
 
@@ -165,21 +168,24 @@
 
     .page {
       color: var(--muted);
-      font-size: 24px;
+      font-size: 28px;
       font-variant-numeric: tabular-nums;
     }
 
     .title {
       margin: 0;
       max-width: 900px;
-      font-size: 82px;
-      line-height: 1.04;
+      font-size: 68px;
+      line-height: 1.12;
       font-weight: 900;
+      letter-spacing: -0.035em;
+      word-break: keep-all;
+      text-wrap: balance;
     }
 
     .title.small {
-      font-size: 70px;
-      line-height: 1.08;
+      font-size: inherit;
+      line-height: inherit;
     }
 
     .hl {
@@ -202,28 +208,6 @@
       flex-direction: column;
       justify-content: center;
       min-height: 0;
-    }
-
-    .footer {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 18px;
-      color: var(--muted);
-      font-size: 23px;
-      line-height: 1.3;
-      padding-bottom: 8px;
-    }
-
-    .feature-footer {
-      justify-content: flex-start;
-      padding: 14px 18px;
-      background: #eef6f4;
-      border-left: 6px solid var(--teal);
-      color: #26343b;
-      font-size: 22px;
-      line-height: 1.35;
-      font-weight: 680;
     }
 
     .cover-title {
@@ -298,7 +282,7 @@
     .cover-stat span {
       margin-top: 7px;
       color: var(--muted);
-      font-size: 19px;
+      font-size: 28px;
       line-height: 1.1;
       font-weight: 720;
     }
@@ -383,7 +367,7 @@
       place-items: center;
       background: var(--teal);
       color: #ffffff;
-      font-size: 24px;
+      font-size: 28px;
       font-weight: 900;
       font-variant-numeric: tabular-nums;
     }
@@ -409,7 +393,7 @@
     .upgrade-row p {
       margin: 0;
       color: var(--muted);
-      font-size: 21px;
+      font-size: 28px;
       line-height: 1.38;
       font-weight: 620;
     }
@@ -449,13 +433,16 @@
 
     .screen-frame {
       width: 100%;
+      aspect-ratio: 16 / 10;
       align-self: start;
       display: grid;
+      overflow: hidden;
       background: #eef3f3;
     }
 
     .screen-frame img {
-      height: auto;
+      width: 100%;
+      height: 100%;
       object-fit: contain;
       border: 1px solid var(--line);
       border-radius: 12px;
@@ -471,7 +458,7 @@
       background: #ffffff;
       border: 1px solid var(--line);
       color: var(--teal-dark);
-      font-size: 23px;
+      font-size: 28px;
       font-weight: 720;
       white-space: nowrap;
     }
@@ -520,7 +507,7 @@
 
     .repo-box span {
       color: var(--muted);
-      font-size: 27px;
+      font-size: 28px;
       font-weight: 760;
     }
 
@@ -538,9 +525,14 @@
     .copy-text {
       white-space: pre-wrap;
       color: #2e3c43;
-      font-size: 14px;
+      font-size: 15px;
       line-height: 1.55;
     }
+
+    .card img { cursor: pointer; outline: 3px solid transparent; outline-offset: -3px; transition: opacity .16s ease, outline-color .16s ease; }
+    .card img:hover { opacity: .82; outline-color: var(--teal); }
+    .card img.user-replaced { outline-color: var(--lime); }
+    .image-picker-hint { color: var(--muted); font-size: 15px; line-height: 1.5; }
 
     html[data-export="1"],
     html[data-export="1"] body {
@@ -618,7 +610,6 @@
                   <img src="assets/{{COVER_IMAGE}}" alt="{{PRODUCT_NAME}} 产品宣传图">
                 </div>
               </div>
-              <footer class="footer"><span>{{PRODUCT_NAME}}</span><span>{{ONE_LINE_CATEGORY}}</span></footer>
             </div>
           </section>
 
@@ -640,7 +631,6 @@
                   </div>
                 </div>
               </div>
-              <footer class="footer"><span>{{VERSION}} 升级地图</span><span>{{PRODUCT_NAME}}</span></footer>
             </div>
           </section>
 
@@ -658,7 +648,6 @@
                 </div>
                 <div class="screen-frame"><img src="assets/{{FEATURE_SCREENSHOT}}" alt="{{FEATURE_SCREENSHOT_ALT}}"></div>
               </div>
-              <footer class="footer feature-footer"><span>{{ONE_SENTENCE_SCREENSHOT_INTERPRETATION}}</span></footer>
             </div>
           </section>
 
@@ -676,7 +665,6 @@
                 </div>
                 <div class="screen-frame"><img src="assets/{{FEATURE_2_SCREENSHOT}}" alt="{{FEATURE_2_SCREENSHOT_ALT}}"></div>
               </div>
-              <footer class="footer feature-footer"><span>{{FEATURE_2_SCREENSHOT_INTERPRETATION}}</span></footer>
             </div>
           </section>
 
@@ -694,7 +682,6 @@
                 </div>
                 <div class="screen-frame"><img src="assets/{{FEATURE_3_SCREENSHOT}}" alt="{{FEATURE_3_SCREENSHOT_ALT}}"></div>
               </div>
-              <footer class="footer feature-footer"><span>{{FEATURE_3_SCREENSHOT_INTERPRETATION}}</span></footer>
             </div>
           </section>
 
@@ -713,7 +700,6 @@
                   <div class="repo-box"><strong>{{RANK}}</strong><span>{{RANK_LABEL}}</span></div>
                 </div>
               </div>
-              <footer class="footer"><span>{{PROJECT_HANDLE}}</span><span>{{PRODUCT_NAME}} · {{VERSION}}</span></footer>
             </div>
           </section>
         </div>
@@ -722,11 +708,14 @@
 
     <aside class="copy-panel" aria-label="发布文案">
       <h2>发布文案</h2>
+      <p class="image-picker-hint">点击卡片截图可选择本地图片并替换；当前会话中的替换结果会参与 PNG 导出。</p>
       <section class="copy-block"><pre class="copy-text">{{TITLE_OPTIONS}}</pre></section>
       <section class="copy-block"><pre class="copy-text">{{BODY_COPY}}</pre></section>
       <section class="copy-block"><pre class="copy-text">{{TAGS}}</pre></section>
     </aside>
   </div>
+
+  <input id="imagePicker" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden>
 
   <script>
     (function () {
@@ -743,6 +732,29 @@
       }
       document.getElementById("prevBtn").addEventListener("click", function () { setCard(current - 1); });
       document.getElementById("nextBtn").addEventListener("click", function () { setCard(current + 1); });
+      var imagePicker = document.getElementById("imagePicker");
+      var imageTarget = null;
+      document.querySelectorAll(".card img").forEach(function (img) {
+        img.title = "点击选择图片";
+        img.addEventListener("click", function (event) {
+          if (document.documentElement.dataset.export === "1") return;
+          event.preventDefault();
+          imageTarget = img;
+          imagePicker.value = "";
+          imagePicker.click();
+        });
+      });
+      imagePicker.addEventListener("change", function () {
+        var file = imagePicker.files && imagePicker.files[0];
+        if (!file || !imageTarget) return;
+        var reader = new FileReader();
+        reader.onload = function () {
+          imageTarget.src = reader.result;
+          imageTarget.alt = file.name;
+          imageTarget.classList.add("user-replaced");
+        };
+        reader.readAsDataURL(file);
+      });
       setCard(current);
     }());
   </script>

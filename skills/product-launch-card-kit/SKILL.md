@@ -5,6 +5,8 @@ description: Create a social launch kit for an app, open-source project, agent s
 
 # Product Launch Card Kit
 
+Read `DESIGN.md` before implementing product/version-release cards. It is the compact design contract; use the detailed references and resources it links when building the artifact.
+
 Use this skill to turn a product, repo, agent workflow, or feature into a publishable social launch package. The normal output is not just copy and not just images: it is a self-contained HTML workbench where the user can preview cards, download PNGs, and copy title candidates, body text, and tags directly from a visible side panel.
 
 ## Default Deliverables
@@ -37,6 +39,8 @@ Do not export cover PNGs by default. Use the HTML page to show the design first,
 
 Use product showcase mode when the launch object is a mature product, open-source project, beta/version release, or feature upgrade where the goal is to introduce product capabilities rather than publish an opinion-led narrative. In this mode, recommend starting from `templates/xiaohongshu-product-showcase.html` and follow `references/product-showcase-preferences.md`.
 
+Before visual implementation, load and read the complete `gpt-taste` skill when it is available. Apply its wide-title, meta-label-ban, dense-grid, contrast, and pre-flight principles. For deterministic 1080x1440 PNG card exports, do not force React, AIDA page sections, GSAP, or motion requirements that would make the exported frame non-deterministic. Use `references/product-showcase-design.md` to translate the applicable principles into static release-card constraints.
+
 Product showcase mode works best for:
 
 - Version releases such as `0.7 Beta`, `v1.0`, or major feature updates.
@@ -47,9 +51,12 @@ Product showcase mode works best for:
 Product showcase defaults:
 
 - Use a bright, restrained technical style rather than a dramatic dark or editorial style.
-- Cover: product name + version badge + release status + 16:9 hero image area + compact metrics.
+- Treat a product/version release card as an information page, not a poster: lead with one clear product identity, one main title, one subtitle, then the content and any necessary supporting note.
+- Header: use only a real product/repository logo when available plus the product name and version. Do not add page-type labels such as “重点更新 03”, decorative eyebrow phrases, or marketing micro-slogans above the title.
+- Cover: product identity + version + main title + subtitle + 16:9 hero image area. Add metrics only when they materially help evaluate the release; do not add them by default.
 - Overview: use an 8-cell upgrade map when there are around 6 update points; let the version card occupy the upper-left two cells.
-- Feature pages: use two-line titles, 2-3 keyword highlights, concise screenshot-reading bullets, and one footer-style screenshot interpretation.
+- Feature pages: use a concise title, subtitle when needed, 2-3 screenshot-reading bullets, and at most one nearby factual supporting note.
+- Do not add decorative footer phrases, repeated product chips, short English labels, or generic “discussion” slogans at the bottom of cards. Keep a bottom note only when it is a concrete source, compatibility warning, or screenshot interpretation that the reader needs.
 - Final page: prefer discussion-oriented copy over direct platform-diversion CTAs when publishing to Xiaohongshu.
 
 ## Cover Design Mode
@@ -116,6 +123,12 @@ Video opening requirements:
    - In preview mode, scale and center the card in a narrow stage so the user can inspect it comfortably.
    - Avoid rounded outer card corners when the user wants clean screenshots. Inner screenshots may keep modest radii.
    - Place image captions where they remain readable. For dark screenshots, use light caption pills; for light screenshots, use dark caption pills.
+   - For product updates and version releases, remove decorative framing before export: no eyebrow line above the title, no redundant module label in the header, and no slogan/chip in the footer. The visual hierarchy should read as product identity → title → subtitle → content → necessary supporting note.
+   - Use `references/product-showcase-design.md` for Chinese typography, minimum font sizes, grid math, reusable CSS primitives, and code simplicity requirements.
+   - Enforce a `28px` minimum for all designed card text except code and terminal output. Keep every screenshot reservation between `16:9` and `9:16`, inclusive, and set Chinese headline line-height deliberately within roughly `1.08-1.18`.
+   - For portrait cards such as `3:4` or `9:16`, use a top-to-bottom narrative. Do not place the main copy and main screenshot in left/right columns. Stack title → explanation/data → screenshot; reserve side-by-side composition for landscape canvases.
+   - Treat every non-cover card as the same editorial level. Overview, feature, minor-update, compatibility, and closing pages must use one identical main-title size, line-height, and weight. Never shrink a feature-page title to fit denser content; edit the copy or layout instead.
+   - Reuse `resources/product-showcase-tokens.css` and icons from `resources/icons/` when they fit the project. Copy required resources into the concrete launch output so the HTML remains self-contained and portable.
    - Put publishing copy in a visible side panel on wide screens, with copy buttons.
    - On narrow screens, stack the card preview first and the copy panel below it.
    - For cover design, build one HTML preview page that displays the four aspect ratios. Do not export PNGs at this stage unless asked.
@@ -211,6 +224,10 @@ ffprobe -v error -select_streams v:0 -show_entries stream=width,height,r_frame_r
 - `scripts/export-cards.js`: Chrome-based PNG exporter for `?export=1&card=N`.
 - `references/story-patterns.md`: reusable launch story patterns.
 - `references/product-showcase-preferences.md`: design and copy preferences for mature product/open-source release decks.
+- `references/product-showcase-design.md`: visual hierarchy, Chinese/English typography, minimum readable sizes, dense-grid rules, and implementation constraints for product release cards.
+- `DESIGN.md`: compact design contract for portrait composition, title consistency, typography, screenshot ratios, and click-to-replace screenshot behavior.
+- `resources/product-showcase-tokens.css`: reusable color, typography, spacing, header, title, body, and supporting-note primitives.
+- `resources/icons/github-mark.svg`: reusable GitHub repository identity icon.
 - `examples/taskr-story-1/`: a worked example based on the Taskr launch deck.
 
 ## Quality Bar
