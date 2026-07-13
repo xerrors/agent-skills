@@ -32,7 +32,7 @@ This document is the design contract for product updates, changelog decks, and v
 - Card screenshots are clickable in preview mode.
 - Clicking opens a local image picker accepting PNG, JPEG, WebP, or GIF.
 - The selected image replaces the current screenshot immediately and participates in PNG export.
-- Replacements are session-scoped by default; do not write large data URLs to local storage.
+- Replacements are session-scoped when opened via `file://`. When served by `scripts/dev-server.js`, the picker also POSTs the new image: it is saved to `./assets/` and the HTML `src` is rewritten on disk, so the change survives reload and feeds PNG export. Do not store large data URLs in local storage.
 - Disable the picker in export mode so deterministic capture is unaffected.
 - Reuse `resources/image-picker.js` and the replaceable-image states in `resources/product-showcase-tokens.css` when building a new workbench.
 

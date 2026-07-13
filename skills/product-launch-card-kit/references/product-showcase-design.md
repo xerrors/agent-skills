@@ -87,7 +87,7 @@ Overview, feature, minor-update, compatibility, and closing cards are peers. The
 
 - In preview mode, every screenshot or image placeholder should be clickable and open a local file picker.
 - Accept PNG, JPEG, WebP, and GIF. Replace the selected image immediately and use it in subsequent PNG export.
-- Keep replacement data session-scoped by default; do not store large data URLs in local storage.
+- Keep replacement data session-scoped when opened via `file://`. When served by `scripts/dev-server.js`, the picker persists the new file to `./assets/` and rewrites the HTML `src` on disk; do not store large data URLs in local storage.
 - Disable selection behavior in export mode.
 - Reuse `resources/image-picker.js` or an equivalent concise implementation. Give replaceable images an obvious hover state without adding permanent decorative labels.
 

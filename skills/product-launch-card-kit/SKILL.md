@@ -128,7 +128,7 @@ Video opening requirements:
    - Enforce a `28px` minimum for all designed card text except code and terminal output. Keep every screenshot reservation between `16:9` and `9:16`, inclusive, and set Chinese headline line-height deliberately within roughly `1.08-1.18`.
    - For portrait cards such as `3:4` or `9:16`, use a top-to-bottom narrative. Do not place the main copy and main screenshot in left/right columns. Stack title → explanation/data → screenshot; reserve side-by-side composition for landscape canvases.
    - Treat every non-cover card as the same editorial level. Overview, feature, minor-update, compatibility, and closing pages must use one identical main-title size, line-height, and weight. Never shrink a feature-page title to fit denser content; edit the copy or layout instead.
-   - Make screenshots and image placeholders clickable in preview mode. Let the user choose a local PNG/JPEG/WebP/GIF, replace the image for the current session, and include it in export. Disable the picker in export mode.
+   - Make screenshots and image placeholders clickable in preview mode. Let the user choose a local PNG/JPEG/WebP/GIF and replace the image. Served via `scripts/dev-server.js`, replacements persist to `./assets/` and the HTML `src` (and therefore survive reload and feed PNG export); opened via `file://`, replacement is session-only. Disable the picker in export mode.
    - Reuse `resources/product-showcase-tokens.css` and icons from `resources/icons/` when they fit the project. Copy required resources into the concrete launch output so the HTML remains self-contained and portable.
    - Put publishing copy in a visible side panel on wide screens, with copy buttons.
    - On narrow screens, stack the card preview first and the copy panel below it.
@@ -190,7 +190,31 @@ The final HTML should expose copyable text blocks in a visible panel beside or b
 
 Use a small copy button beside each block. Browser clipboard APIs are fine; include a fallback that selects text if clipboard write fails.
 
+## Persistent Image Replacement (dev server)
+
+A single-page HTML opened via `file://` cannot write back to disk: the browser sandbox forbids it, so click-to-replace only swaps the in-memory `src` and the change is lost on reload. To make replacements real, serve the workbench with the bundled zero-dependency dev server:
+
+```bash
+node skills/product-launch-card-kit/scripts/dev-server.js /absolute/path/to/launch
+# or, from inside the launch dir:
+node skills/product-launch-card-kit/scripts/dev-server.js .
+```
+
+This starts `http://127.0.0.1:8765/` serving the launch directory and exposes:
+
+- `GET /api/health` returns `{ok:true, projectRoot}`. The picker probes this to decide whether to persist.
+- `POST /api/upload` accepts `{originalSrc, imageData}` where `imageData` is a base64 data URL. Saves the file to `./assets/replaced-<ts>-<basename>.<ext>`, rewrites every matching `src="..."` in HTML files under the project root, and returns the new `src`.
+- `GET /api/assets` lists files in `./assets/` for debugging.
+
+Open the workbench at `http://127.0.0.1:8765/<your-cards>.html` and click any card image. The picker POSTs the new image; the server writes it to `./assets/` and patches the HTML `src`. A short toast confirms the saved path. Because the file on disk now references the new asset, the next PNG export picks it up automatically.
+
+When the dev server is not running (or the page is opened via `file://`), the picker falls back to session-only replacement and shows a warn toast so the change is clearly temporary.
+
+The dev server has zero npm dependencies and uses only Node.js built-ins. Override host/port with `--host` and `--port`.
+
 ## Export Notes
+
+If you ran the dev server and replaced images, those replacements are already on disk in `./assets/` and the HTML `src` already points at them, so a plain file-based export picks them up. Make sure to stop (or parallel-run) the dev server; export does not need it.
 
 Use the bundled script like this:
 
@@ -222,14 +246,15 @@ ffprobe -v error -select_streams v:0 -show_entries stream=width,height,r_frame_r
 
 - `templates/xiaohongshu-workbench.html`: starter HTML workbench with card navigation, PNG links, a visible copywriting panel, and descriptive image placeholders.
 - `templates/xiaohongshu-product-showcase.html`: product/version release showcase template with cover hero image, compact metrics, 8-cell upgrade map, screenshot feature pages, and a discussion-oriented final card.
+- `scripts/dev-server.js`: zero-dependency Node dev server. Serves the launch dir, exposes `POST /api/upload` to persist image replacements to `./assets/` and rewrite HTML `src`, plus `GET /api/health` and `GET /api/assets`. Use `node scripts/dev-server.js <project-dir> [--port 8765] [--host 127.0.0.1]`.
 - `scripts/export-cards.js`: Chrome-based PNG exporter for `?export=1&card=N`.
 - `references/story-patterns.md`: reusable launch story patterns.
 - `references/product-showcase-preferences.md`: design and copy preferences for mature product/open-source release decks.
 - `references/product-showcase-design.md`: visual hierarchy, Chinese/English typography, minimum readable sizes, dense-grid rules, and implementation constraints for product release cards.
 - `DESIGN.md`: compact design contract for portrait composition, title consistency, typography, screenshot ratios, and click-to-replace screenshot behavior.
-- `resources/product-showcase-tokens.css`: reusable color, typography, spacing, header, title, body, and supporting-note primitives.
+- `resources/product-showcase-tokens.css`: reusable color, typography, spacing, header, title, body, and supporting-note primitives, plus `.showcase-replaceable-image` and `.launch-card-save-toast` styles used by the persistent picker.
 - `resources/icons/github-mark.svg`: reusable GitHub repository identity icon.
-- `resources/image-picker.js`: reusable session-scoped click-to-replace image picker for preview workbenches.
+- `resources/image-picker.js`: reusable click-to-replace image picker. Auto-probes `/api/health` and, when reachable, POSTs replacements to `/api/upload` so they persist to `./assets/` and the HTML `src`; falls back to session-only replacement on `file://`. Auto-attaches on load and exposes `window.attachLaunchCardImagePicker(options)`.
 
 ## Quality Bar
 

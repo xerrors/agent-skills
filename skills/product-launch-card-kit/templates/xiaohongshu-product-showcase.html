@@ -708,7 +708,7 @@
 
     <aside class="copy-panel" aria-label="发布文案">
       <h2>发布文案</h2>
-      <p class="image-picker-hint">点击卡片截图可选择本地图片并替换；当前会话中的替换结果会参与 PNG 导出。</p>
+      <p class="image-picker-hint">点击卡片截图可选择本地图片并替换。启动 dev server（node scripts/dev-server.js .）后替换会保存到 ./assets/ 并写入 HTML；未启动时仅当前会话有效。</p>
       <section class="copy-block"><pre class="copy-text">{{TITLE_OPTIONS}}</pre></section>
       <section class="copy-block"><pre class="copy-text">{{BODY_COPY}}</pre></section>
       <section class="copy-block"><pre class="copy-text">{{TAGS}}</pre></section>
@@ -734,12 +734,33 @@
       document.getElementById("nextBtn").addEventListener("click", function () { setCard(current + 1); });
       var imagePicker = document.getElementById("imagePicker");
       var imageTarget = null;
+
+      /* Save-toast + persistent picker: dev server writes replacements to ./assets/ and rewrites HTML src. */
+      var toastStyle = document.createElement("style");
+      toastStyle.textContent = ".launch-card-save-toast{position:fixed;right:24px;bottom:24px;z-index:9999;background:var(--showcase-ink,#102128);color:#fff;padding:12px 18px;font:600 16px/1.4 var(--showcase-font-cn,sans-serif);border-radius:8px;box-shadow:0 12px 36px rgba(16,33,40,.22);opacity:0;transform:translateY(8px);transition:opacity .22s ease,transform .22s ease;pointer-events:none;max-width:min(360px,80vw)}.launch-card-save-toast.is-visible{opacity:1;transform:translateY(0)}.launch-card-save-toast.is-ok{background:#0a7d6e}.launch-card-save-toast.is-warn{background:#9a6a00}.launch-card-save-toast.is-error{background:#a3232b}";
+      document.head.appendChild(toastStyle);
+      function showToast(message, kind) {
+        var el = document.createElement("div");
+        el.className = "launch-card-save-toast" + (kind ? " is-" + kind : "");
+        el.textContent = message;
+        document.body.appendChild(el);
+        void el.offsetWidth;
+        el.classList.add("is-visible");
+        setTimeout(function () { el.classList.remove("is-visible"); setTimeout(function () { el.remove(); }, 320); }, 1300);
+      }
+      var canPersist = false;
+      if (location.protocol !== "file:") {
+        fetch("/api/health", { cache: "no-store" })
+          .then(function (r) { canPersist = !!r.ok; })
+          .catch(function () { canPersist = false; });
+      }
       document.querySelectorAll(".card img").forEach(function (img) {
         img.title = "点击选择图片";
         img.addEventListener("click", function (event) {
           if (document.documentElement.dataset.export === "1") return;
           event.preventDefault();
           imageTarget = img;
+          imageTarget.dataset.currentSrc = img.getAttribute("src") || "";
           imagePicker.value = "";
           imagePicker.click();
         });
@@ -747,11 +768,32 @@
       imagePicker.addEventListener("change", function () {
         var file = imagePicker.files && imagePicker.files[0];
         if (!file || !imageTarget) return;
+        var originalSrc = imageTarget.dataset.currentSrc || imageTarget.getAttribute("src") || "";
         var reader = new FileReader();
         reader.onload = function () {
-          imageTarget.src = reader.result;
+          var dataUrl = reader.result;
+          imageTarget.src = dataUrl;
           imageTarget.alt = file.name;
           imageTarget.classList.add("user-replaced");
+          if (canPersist) {
+            fetch("/api/upload", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ originalSrc: originalSrc, imageData: dataUrl })
+            })
+              .then(function (r) { return r.json(); })
+              .then(function (j) {
+                if (!j || !j.src) { showToast("保存失败：仅当前会话可见", "error"); return; }
+                imageTarget.src = j.src;
+                imageTarget.dataset.persistedSrc = j.src;
+                imageTarget.classList.add("is-replaced-persistent");
+                showToast("已保存到 " + j.src, "ok");
+              })
+              .catch(function () { showToast("保存失败：网络错误", "error"); });
+          } else {
+            imageTarget.dataset.persistedSrc = "";
+            showToast("已替换（刷新即失效；启动 dev server 可持久化）", "warn");
+          }
         };
         reader.readAsDataURL(file);
       });

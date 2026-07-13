@@ -129,3 +129,32 @@ html[data-export="1"] .showcase-replaceable-image {
   cursor: default;
   outline-color: transparent;
 }
+
+/* Persistent replacement states shared by resources/image-picker.js. */
+.showcase-replaceable-image.is-replaced-persistent {
+  outline-color: var(--showcase-primary);
+}
+
+.launch-card-save-toast {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 9999;
+  background: var(--showcase-ink);
+  color: #fff;
+  padding: 12px 18px;
+  font: 600 16px/1.4 var(--showcase-font-cn);
+  border-radius: 8px;
+  box-shadow: 0 12px 36px rgba(16, 33, 40, 0.22);
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 220ms ease, transform 220ms ease;
+  pointer-events: none;
+  max-width: min(360px, 80vw);
+}
+.launch-card-save-toast.is-visible { opacity: 1; transform: translateY(0); }
+.launch-card-save-toast.is-ok { background: #0a7d6e; }
+.launch-card-save-toast.is-warn { background: #9a6a00; }
+.launch-card-save-toast.is-error { background: #a3232b; }
+
+html[data-export="1"] .launch-card-save-toast { display: none; }
