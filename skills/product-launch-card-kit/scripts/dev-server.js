@@ -55,6 +55,55 @@ const MIME = {
 
 function mimeOf(p) { return MIME[path.extname(p).toLowerCase()] || "application/octet-stream"; }
 
+// Discover the HTML entry to serve when a client hits "/" or asks for export.
+// Priority:
+//   1. <root>/index.html (preserves the classic dev-server convention)
+//   2. The only `*-cards.html` in the root (SKILL.md default delivery name)
+//   3. A unique `<root>/*.html` if exactly one remains
+//   4. Otherwise the lexicographically first `*.html`
+// Returns null when no HTML file is present.
+function discoverDefaultEntry(root) {
+  const entries = fs.readdirSync(root)
+    .filter(function (f) { return !f.startsWith("."); })
+    .filter(function (f) { return f.toLowerCase().endsWith(".html"); })
+    .sort();
+  if (entries.length === 0) return null;
+
+  const basename = (function () {
+    if (entries.indexOf("index.html") !== -1) return "index.html";
+    const cardsFiles = entries.filter(function (f) { return /-cards\.html$/i.test(f); });
+    if (cardsFiles.length === 1) return cardsFiles[0];
+    if (cardsFiles.length > 1) {
+      // Among multiple `-cards.html` candidates, pick the shortest story-id
+      // (closest to `<story-id>-cards.html` from SKILL.md).
+      return cardsFiles.slice().sort(function (a, b) { return a.length - b.length; })[0];
+    }
+    if (entries.length === 1) return entries[0];
+    return entries[0];
+  })();
+
+  const file = path.join(root, basename);
+  const webPath = "/" + basename;
+  // Derive story-id from `<story-id>-cards.html`; for index.html or other
+  // names fall back to the directory leaf so the export prefix stays stable.
+  const storyIdMatch = /^(.*)-cards$/i.exec(path.basename(file, ".html"));
+  const storyId = storyIdMatch ? storyIdMatch[1] : path.basename(root);
+  return {
+    file: file,
+    webPath: webPath,
+    basename: basename,
+    storyId: storyId,
+    prefix: storyId + "-release-card",
+  };
+}
+
+let cachedEntry = null;
+try {
+  cachedEntry = discoverDefaultEntry(PROJECT_ROOT);
+} catch (e) {
+  console.warn("[entry] discovery failed: " + (e.message || e));
+}
+
 function safeJoin(root, relative) {
   if (!relative) return null;
   const cleaned = relative.replace(/^\/+/, "");
@@ -180,8 +229,17 @@ function handleAssets(res) {
 }
 
 function handleStatic(req, res, pathname) {
-  const rel = pathname === "/" ? "/index.html" : pathname;
-  const file = safeJoin(PROJECT_ROOT, rel);
+  if (pathname === "/") {
+    if (!cachedEntry) {
+      return send(res, 404, "No HTML entry found in project root: " + PROJECT_ROOT);
+    }
+    res.writeHead(302, {
+      Location: cachedEntry.webPath,
+      "Cache-Control": "no-store",
+    });
+    return res.end();
+  }
+  const file = safeJoin(PROJECT_ROOT, pathname);
   if (!file) return send(res, 403, "Forbidden");
   fs.stat(file, function (err, stat) {
     if (err || !stat.isFile()) return send(res, 404, "Not found");
@@ -199,20 +257,22 @@ const server = http.createServer(function (req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
 
   if (pathname === "/api/export" && req.method === "POST") {
+    if (!cachedEntry) {
+      return sendJson(res, 400, { error: "No HTML entry found in project root: " + PROJECT_ROOT });
+    }
     const { spawnSync } = require("child_process");
-    const chrome = process.env.CHROME_BIN || "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
     const scriptPath = path.join(__dirname, "export-cards.js");
     let cardCount = 11;
     try {
-      const htmlContent = fs.readFileSync(path.join(PROJECT_ROOT, "yuxi-071-cards.html"), "utf8");
+      const htmlContent = fs.readFileSync(cachedEntry.file, "utf8");
       const matches = htmlContent.match(/<article\s+[^>]*data-layout=/g) || [];
       if (matches.length > 0) cardCount = matches.length;
     } catch (_) {}
     const result = spawnSync("node", [
       scriptPath,
-      "--html", path.join(PROJECT_ROOT, "yuxi-071-cards.html"),
+      "--html", cachedEntry.file,
       "--out", path.join(PROJECT_ROOT, "previews"),
-      "--prefix", "yuxi-071-release-card",
+      "--prefix", cachedEntry.prefix,
       "--cards", String(cardCount)
     ]);
     if (result.status === 0) {
@@ -237,11 +297,15 @@ const server = http.createServer(function (req, res) {
 });
 
 server.listen(PORT, HOST, function () {
-  const localUrl = "http://" + HOST + ":" + PORT + "/";
+  const entryLine = cachedEntry ? "  Entry        : " + cachedEntry.basename : "  Entry        : (none — drop an .html into the project root)";
+  const openUrl = cachedEntry
+    ? "http://" + HOST + ":" + PORT + cachedEntry.webPath
+    : "http://" + HOST + ":" + PORT + "/";
   console.log("");
   console.log("Product launch card dev server");
   console.log("  Project root : " + PROJECT_ROOT);
-  console.log("  Local URL    : " + localUrl);
+  console.log(entryLine);
+  console.log("  Local URL    : " + openUrl);
   console.log("  Open in browser; click any card image to replace it.");
   console.log("  Replacements are written to ./assets/ and saved into HTML src attrs.");
   console.log("  Press Ctrl-C to stop.");
