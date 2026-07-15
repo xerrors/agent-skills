@@ -12,11 +12,11 @@ repository and its maintainer GitHub Project. The skill has four core areas:
   the daily trend chart.
 - PR tracking: inspect the current PR or open PRs and report only high-signal
   review, check, recent activity, freshness, and next-action information.
-- Roadmap updates: update the maintainer-only GitHub Project roadmap from
-  user-provided items and selected GitHub issues by default.
+- Roadmap updates: update matching items in the maintainer-only GitHub Project
+  roadmap, and add items only when the user explicitly requests creation.
 - Development project management: when starting, planning, or completing Yuxi
-  development work, keep the GitHub Project item current with the task, design
-  plan, implementation status, completion date, test results, and screenshots.
+  development work, keep a matching existing GitHub Project item current with
+  the task, design plan, status, completion date, test results, and screenshots.
 
 Default to Chinese output unless the user asks for another language. Treat words
 like "current", "latest", "today", "now", "recent", "当前", "最新", "今天",
@@ -39,6 +39,19 @@ and "动态" as requiring live GitHub data, not memory.
 - If the user provides another repo, PR URL, or PR number, follow that explicit
   target instead of the default.
 
+## GitHub Project Creation Boundary
+
+- Inspecting a Project or asking to plan, start, track, update, sync, finish, or
+  report work authorizes reading and updating matching existing resources only.
+- If the requested GitHub Project does not exist, report that it was not found.
+  Never create a new Project unless the user explicitly asks to create one.
+- If the Project exists but no matching item exists, report the missing item and
+  skip the Project update. Never create a draft item, Project item, or repository
+  issue unless the user explicitly asks to create or add that item.
+- Creation permission is specific to the requested resource. For example, a
+  request to add a roadmap item permits creating that item, not a new Project or
+  a repository issue.
+
 ## Development Project Management
 
 Use development project management whenever the agent is working in a Yuxi
@@ -46,7 +59,7 @@ checkout or the user asks to create, plan, implement, track, finish, verify, or
 ship a Yuxi development task. This includes implicit requests such as "帮我开发
 Yuxi 的 X", "实现这个 Yuxi 功能", "修一下 Yuxi 的 bug", or "这个任务做完了".
 
-Before creating or updating task items, gather live Project context:
+Before searching for or updating task items, gather live Project context:
 
 ```bash
 gh repo view xerrors/Yuxi --json defaultBranchRef,url
@@ -55,24 +68,28 @@ gh project field-list 2 --owner xerrors --format json
 gh project item-list 2 --owner xerrors --format json --limit 100
 ```
 
-When starting a new task:
+When starting a task:
 
 - First search existing Project items for the same title, linked issue/PR, or
   near-identical scope. Update the existing item instead of creating a duplicate.
-- If no item exists, create a GitHub Project draft item before or alongside the
-  implementation work:
+- If no matching item exists, report that the Project update was skipped and
+  continue the non-Project work when possible. Do not create an item merely
+  because development is starting.
+- Only when the user explicitly asks to create or add a task item, create a
+  GitHub Project draft item:
 
 ```bash
 gh project item-create 2 --owner xerrors --title "<task title>" --body "<task body>" --format json
 ```
 
-- The item body should include the problem, intended outcome, source request,
-  and any links to related issues, PRs, docs, screenshots, or local design notes.
-- If there is a development or design plan, write it into the Project item body
-  before major implementation begins. Keep it concrete: scope, approach,
-  affected areas, verification plan, and known risks.
-- If the Project has a Status field, set the item to the appropriate in-progress
-  state after resolving field and option IDs from `gh project field-list`.
+- For an existing or explicitly created item, include the problem, intended
+  outcome, source request, and links to related issues, PRs, docs, screenshots,
+  or local design notes in the body.
+- If there is a development or design plan, write it into that item before major
+  implementation begins. Keep it concrete: scope, approach, affected areas,
+  verification plan, and known risks.
+- If the Project has a Status field, set the matching item to the appropriate
+  in-progress state after resolving field and option IDs.
 
 When updating an active task:
 
@@ -84,6 +101,8 @@ When updating an active task:
 
 When completing a task:
 
+- If no matching existing item can be found, report that completion metadata was
+  not written to the Project. Do not create an item retroactively.
 - Mark the Project item as done/completed if the Project has a matching Status
   option. Resolve field and option IDs from `gh project field-list`, then use
   `gh project item-edit`.
@@ -197,7 +216,7 @@ Interpretation rule:
 - If both Project and `roadmap.md` are requested, update the Project first, then
   make the smallest matching document change.
 
-Before changing the Project, gather live context:
+Before searching or updating the Project, gather live context:
 
 ```bash
 gh repo view xerrors/Yuxi --json defaultBranchRef,url
@@ -207,21 +226,32 @@ gh issue list --repo xerrors/Yuxi --state open --label roadmap --limit 100 --jso
 gh issue list --repo xerrors/Yuxi --state open --label feat --limit 100 --json number,title,labels,updatedAt,url
 ```
 
-Create missing roadmap items as GitHub Project draft issues:
+After inspecting the Project:
+
+- Update matching existing roadmap items when their content or fields need to
+  change.
+- If no matching item exists, include it under `Skipped` with the reason that no
+  existing item was found. A general request to update, refresh, or sync the
+  roadmap does not authorize creation.
+- Only when the user explicitly asks to create or add the roadmap item, create a
+  GitHub Project draft item:
 
 ```bash
 gh project item-create 2 --owner xerrors --title "<item title>" --body "<item body>" --format json
 ```
 
-If the user provides explicit roadmap items, treat those as authoritative. For
-issue-derived items, prefer open issues labeled `roadmap`; also inspect relevant
-`feat` issues when the user asks to pull from issues more broadly. Do not add
-ordinary bug or question issues to the roadmap unless the user explicitly
-selects them or the issue already has a roadmap signal.
+If the user provides roadmap items, treat their content as authoritative for
+matching and updates. Create them only when the request explicitly asks to add
+or create those items. For issue-derived items, prefer open issues labeled
+`roadmap`; also inspect relevant `feat` issues when the user asks to pull from
+issues more broadly. Do not add ordinary bug or question issues to the roadmap
+unless the user explicitly selects them or the issue already has a roadmap
+signal.
 
 Project item rules:
 
-- Use draft items unless the user explicitly asks to create repository issues.
+- When creation is explicitly authorized, use draft items unless the user
+  explicitly asks to create repository issues.
 - Avoid duplicates by matching existing Project item titles, issue numbers, and
   near-identical wording.
 - Include `来源：用户提供`, `来源：GitHub issue`, or
@@ -304,6 +334,8 @@ For a roadmap update, summarize:
 - Anonymous GitHub API calls are rate-limited. Prefer `gh` when possible.
 - The star chart uses Beijing-day cutoffs, so "today" is a partial day until
   24:00 CST.
+- Finding no matching Project or Project item is not permission to create one.
+  Report the miss unless the user explicitly requested creation.
 - Roadmap issues are not always labeled consistently. If a user asks to include
   issues, report which label filters were checked and which issues were skipped
   instead of silently guessing.

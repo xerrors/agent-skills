@@ -22,7 +22,7 @@
     {
       "id": 4,
       "prompt": "更新一下 Yuxi roadmap，把我列的事项加进去，同时从带 roadmap 标签的 issue 里补充遗漏项。",
-      "expected_output": "A roadmap update workflow for xerrors/Yuxi that treats roadmap as the maintainer-only GitHub Project by default, checks existing project items and live roadmap-labeled issues, creates missing draft project items without duplicates, keeps issue source links in item bodies, and summarizes added, updated, skipped, and source issues.",
+      "expected_output": "A roadmap update workflow for xerrors/Yuxi that treats roadmap as the maintainer-only GitHub Project by default, checks existing project items and live roadmap-labeled issues, creates missing draft project items only because this prompt explicitly asks to add them, avoids duplicates, keeps issue source links in item bodies, and summarizes added, updated, skipped, and source issues.",
       "files": []
     },
     {
@@ -35,6 +35,12 @@
       "id": 6,
       "prompt": "我在 Yuxi 项目里要开发一个新的知识库导入任务，先帮我建任务并记录设计计划；做完后把状态、完成日期、测试结果和截图都补到项目里。",
       "expected_output": "The skill should trigger because development is happening inside the Yuxi project, create or update a matching GitHub Project item before implementation, write the design plan into the item body, and on completion update status, Beijing completion date, test results, and screenshot links or paths without creating duplicates.",
+      "files": []
+    },
+    {
+      "id": 7,
+      "prompt": "帮我开始开发 Yuxi 的知识库文件树，先看 GitHub Project 里有没有对应任务；如果没有就告诉我。",
+      "expected_output": "The skill should inspect the live GitHub Project and update a matching existing item if found. If no matching item exists, it should report that the Project update was skipped and must not create a Project, draft item, Project item, or repository issue because the prompt did not request creation.",
       "files": []
     }
   ]
