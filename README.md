@@ -10,10 +10,20 @@ Skills live under `skills/<skill-name>/` and each skill must include a
 ```text
 agent-skills/
 ├── skills/
-│   └── process-arxiv-paper/
-│       ├── SKILL.md
-│       └── agents/
-│           └── openai.yaml
+│   ├── process-arxiv-paper/
+│   │   ├── SKILL.md
+│   │   └── agents/
+│   │       └── openai.yaml
+│   ├── product-launch-card-kit/
+│   │   └── SKILL.md
+│   ├── skill-manager/
+│   │   └── SKILL.md
+│   ├── xerrors-design/
+│   │   ├── SKILL.md
+│   │   └── agents/
+│   │       └── openai.yaml
+│   └── yuxi-manage/
+│       └── SKILL.md
 ├── CONTRIBUTING.md
 └── README.md
 ```
@@ -72,6 +82,12 @@ Restart Codex after installing or updating skills.
   for apps, open-source projects, agent skills, plugins, and developer tools,
   including screenshot-ready cards, PNG export/download, titles, body copy, and
   tags.
+- `skill-manager`: manage the local agent-skills repository and install, link,
+  sync, and update its skills into Agents, Codex, and Claude Code skill
+  directories.
+- `xerrors-design`: Xerrors design preference router for UI/UX and frontend
+  work; routes interface tasks to `ui-ux-pro-max-skill` or a taste-skill and
+  records Xerrors' default taste and density preferences.
 - `yuxi-manage`: manage the `xerrors/Yuxi` GitHub project, including star
   growth reports, trend charts, current PR status, open PR overviews, review
   state, CI/check signals, and latest PR dynamics.
