@@ -1,49 +1,43 @@
 ---
 name: skill-manager
-description: Manage the local agent-skills repository and install its skills into agent tool directories. Use when the user asks to update, modify, create, configure, install, link, symlink, sync, commit, or push skills from ~/Documents/projects/agent-skills, especially commands like skill update, update this Skill, config skills, install skills for Codex, install skills for Claude Code, or ensure ~/.agents/skills, ~/.codex/skills, and ~/.claude/skills point at the repository.
+description: 管理本地 agent-skills 仓库，并将其中的 skill 安装到各 Agent 工具目录。当用户要求更新、修改、创建、配置、安装、链接、建立符号链接、同步、提交或推送 ~/Documents/projects/agent-skills 中的 skill 时使用，尤其适用于 skill update、update this Skill、config skills、install skills for Codex、install skills for Claude Code，或确保 ~/.agents/skills、~/.codex/skills 与 ~/.claude/skills 指向该仓库等请求。
 ---
 
-# Skill Manager
+# Skill 管理器
 
-## Overview
+## 概述
 
-Use this skill to manage personal skills in the `agent-skills` GitHub repository
-and to keep the same skills available to Agents, Codex, and Claude Code.
+使用此 skill 管理 `agent-skills` GitHub 仓库中的个人 skill，并让 Agents、Codex 和 Claude Code 能够使用同一套 skill。
 
-Default to Chinese responses unless the user asks for another language.
+除非用户要求使用其他语言，否则默认使用中文回复。
 
-## Defaults
+## 默认值
 
-- Repository: `~/Documents/projects/agent-skills`.
-- Skills source directory: `~/Documents/projects/agent-skills/skills`.
-- Agent skills directory: `~/.agents/skills`.
-- Codex skills directory: `${CODEX_HOME:-~/.codex}/skills`.
-- Claude Code skills directory: `${CLAUDE_CONFIG_DIR:-~/.claude}/skills`.
-- Expected GitHub account for permission checks: `xerrors`.
-- GitHub proxy fallback: `http://127.0.0.1:7890`.
+- 仓库：`~/Documents/projects/agent-skills`。
+- Skill 源目录：`~/Documents/projects/agent-skills/skills`。
+- Agent skill 目录：`~/.agents/skills`。
+- Codex skill 目录：`${CODEX_HOME:-~/.codex}/skills`。
+- Claude Code skill 目录：`${CLAUDE_CONFIG_DIR:-~/.claude}/skills`。
+- 权限检查所期望的 GitHub 账号：`xerrors`。
+- GitHub 代理回退地址：`http://127.0.0.1:7890`。
 
-If the user gives a different repository, skill name, branch, or install
-directory, follow the explicit target.
+如果用户指定了其他仓库、skill 名称、分支或安装目录，遵循用户明确给出的目标。
 
-## Request Routing
+## 请求路由
 
-- Use **Update** when the user asks to change a skill, add behavior to a skill,
-  repair a skill, commit a skill change, or push skill updates.
-- Use **Config** when the user asks to install skills, configure skills, create
-  symlinks, check whether agent tools can see skills, or make Agents/Codex/Claude
-  Code share the repository's skills.
-- If the request includes both, do Update first, then Config.
+- 当用户要求更改 skill、为 skill 添加行为、修复 skill、提交 skill 更改或推送 skill 更新时，使用 **更新** 流程。
+- 当用户要求安装 skill、配置 skill、创建符号链接、检查 Agent 工具能否发现 skill，或让 Agents/Codex/Claude Code 共享仓库中的 skill 时，使用 **配置** 流程。
+- 如果请求同时包含两类操作，先执行更新，再执行配置。
 
-## Update
+## 更新
 
-Before editing a skill, synchronize the repository:
+编辑 skill 前，先同步仓库：
 
 ```bash
 git -C ~/Documents/projects/agent-skills pull --ff-only
 ```
 
-If the pull appears to hang or times out, retry once with the local proxy without
-writing global Git config:
+如果拉取似乎卡住或超时，使用本地代理重试一次，但不要写入全局 Git 配置：
 
 ```bash
 git -C ~/Documents/projects/agent-skills \
@@ -52,55 +46,45 @@ git -C ~/Documents/projects/agent-skills \
   pull --ff-only
 ```
 
-If Git reports an authentication or permission error, inspect the GitHub CLI
-account before continuing:
+如果 Git 报告身份验证或权限错误，在继续之前检查 GitHub CLI 账号：
 
 ```bash
 gh auth status
 gh api user --jq .login
 ```
 
-If the login is not `xerrors`, stop before any commit or push and tell the user
-which account is active. Ask the user to switch or re-authenticate. For network
-failures in `gh`, retry with:
+如果登录账号不是 `xerrors`，在执行任何提交或推送前停止，并告诉用户当前使用的是哪个账号。请用户切换账号或重新认证。如果 `gh` 出现网络故障，使用以下命令重试：
 
 ```bash
 HTTPS_PROXY=http://127.0.0.1:7890 gh auth status
 HTTPS_PROXY=http://127.0.0.1:7890 gh api user --jq .login
 ```
 
-When editing:
+编辑时：
 
-- Inspect the current worktree with `git status --short --branch` first.
-- Preserve unrelated dirty or untracked files. Do not revert, overwrite, stage,
-  or commit changes that are not part of the requested skill update.
-- Read the target skill's existing `SKILL.md` and any directly referenced
-  resources before editing.
-- For a new skill, use the local skill creator workflow when available.
-- Keep `SKILL.md` concise. Put only essential trigger information in the
-  frontmatter `description` and put procedural details in the body.
-- Update `agents/openai.yaml` if the skill's user-facing description or default
-  prompt is stale.
+- 先使用 `git status --short --branch` 检查当前工作树。
+- 保留无关的未提交文件或未跟踪文件。不要还原、覆盖、暂存或提交不属于本次 skill 更新的更改。
+- 编辑目标 skill 前，读取其现有 `SKILL.md` 以及其中直接引用的资源。
+- 创建新 skill 时，在可用的情况下使用本地 skill creator 工作流。
+- 保持 `SKILL.md` 简洁。frontmatter 的 `description` 中只放必要的触发信息，流程细节放在正文中。
+- 如果 skill 面向用户的描述或默认提示已经过时，更新 `agents/openai.yaml`。
 
-After editing, validate the changed skill when the validator exists:
+编辑完成后，如果存在验证器，则验证修改过的 skill：
 
 ```bash
 python3 ~/.codex/skills/.system/skill-creator/scripts/quick_validate.py <skill-dir>
 ```
 
-If that path does not exist, search for `quick_validate.py` under known Codex
-skill directories and use the first matching validator.
+如果该路径不存在，在已知的 Codex skill 目录中搜索 `quick_validate.py`，并使用找到的第一个验证器。
 
-Before committing or pushing:
+提交或推送之前：
 
-- Show the user the changed files and a short summary.
-- Ask for explicit confirmation to commit and push.
-- Do not commit or push without that confirmation, even if the user originally
-  asked for an update.
-- After confirmation, stage only the relevant skill files and any intentional
-  repository metadata updates.
+- 向用户展示修改过的文件及简短摘要。
+- 请求用户明确确认是否提交并推送。
+- 即使用户最初要求更新，也不要在未经确认的情况下提交或推送。
+- 用户确认后，只暂存相关 skill 文件以及有意修改的仓库元数据。
 
-Use a focused commit:
+使用聚焦的提交：
 
 ```bash
 git -C ~/Documents/projects/agent-skills add <changed-skill-files>
@@ -108,24 +92,19 @@ git -C ~/Documents/projects/agent-skills commit -m "Update <skill-name> skill"
 git -C ~/Documents/projects/agent-skills push
 ```
 
-If push fails because of network timeout, retry once with the 7890 proxy using
-per-command Git config. If push fails because of auth, re-check that `gh` is
-logged in as `xerrors`.
+如果推送因网络超时失败，使用每条命令单独设置的 7890 代理重试一次。如果推送因身份验证失败，再次检查 `gh` 当前登录的是否为 `xerrors`。
 
-## Config
+## 配置
 
-Config ensures repository skills are visible in all supported local agent tool
-skill directories.
+配置流程用于确保仓库中的 skill 能被所有受支持的本地 Agent 工具 skill 目录发现。
 
-First resolve the source skill or skills:
+首先确定源 skill：
 
-- If the user names a skill, use `~/Documents/projects/agent-skills/skills/<name>`.
-- If no skill is named and the user says to install or configure "these skills",
-  enumerate every directory under `~/Documents/projects/agent-skills/skills`
-  that contains `SKILL.md`.
-- Do not create links for directories that do not contain `SKILL.md`.
+- 如果用户指定了某个 skill，使用 `~/Documents/projects/agent-skills/skills/<name>`。
+- 如果用户没有指定 skill 名称，只要求安装或配置“这些 skill”，则枚举 `~/Documents/projects/agent-skills/skills` 下所有包含 `SKILL.md` 的目录。
+- 不要为不包含 `SKILL.md` 的目录创建链接。
 
-For each source skill, check these targets:
+对每个源 skill，检查以下目标：
 
 ```text
 ~/.agents/skills/<skill-name>
@@ -133,35 +112,29 @@ ${CODEX_HOME:-~/.codex}/skills/<skill-name>
 ${CLAUDE_CONFIG_DIR:-~/.claude}/skills/<skill-name>
 ```
 
-Create missing parent directories with `mkdir -p`. For each target:
+使用 `mkdir -p` 创建缺失的父目录。对于每个目标：
 
-- If the target is absent, create a symlink.
-- If the target is a symlink whose resolved path is the source skill directory,
-  leave it unchanged.
-- If the target is a symlink that resolves elsewhere, do not replace it without
-  user confirmation. Report the existing target and the desired source.
-- If the target is a real directory or file, do not overwrite it. Report the
-  conflict and ask how to proceed.
+- 如果目标不存在，创建符号链接。
+- 如果目标是符号链接，且解析后的路径就是源 skill 目录，则保持不变。
+- 如果目标是符号链接，但解析后指向其他位置，未经用户确认不要替换。报告现有目标和期望的源目录。
+- 如果目标是真实目录或文件，不要覆盖。报告冲突并询问用户如何处理。
 
-Prefer direct links from `~/.agents/skills` and Codex to the repository source:
+对于 `~/.agents/skills` 和 Codex，优先创建直接指向仓库源目录的链接：
 
 ```bash
 ln -s ~/Documents/projects/agent-skills/skills/<skill-name> ~/.agents/skills/<skill-name>
 ln -s ~/Documents/projects/agent-skills/skills/<skill-name> "${CODEX_HOME:-$HOME/.codex}/skills/<skill-name>"
 ```
 
-For Claude Code, follow the local convention when `~/.agents/skills/<skill-name>`
-already exists: link Claude Code to the Agents entry as long as the resolved path
-still points at the repository source.
+对于 Claude Code，如果 `~/.agents/skills/<skill-name>` 已存在，则遵循本地约定：只要解析后的路径仍指向仓库源目录，就让 Claude Code 链接到 Agents 目录中的入口。
 
 ```bash
 ln -s ../../.agents/skills/<skill-name> "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/skills/<skill-name>"
 ```
 
-If that relative link would not resolve correctly, create a direct symlink to the
-repository source instead.
+如果该相对链接无法正确解析，则改为创建直接指向仓库源目录的符号链接。
 
-Verify links after creation:
+创建后验证链接：
 
 ```bash
 ls -l ~/.agents/skills/<skill-name>
@@ -172,5 +145,4 @@ realpath "${CODEX_HOME:-$HOME/.codex}/skills/<skill-name>"
 realpath "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/skills/<skill-name>"
 ```
 
-In the final response, report which links already existed, which were created,
-and any conflicts that need user input.
+在最终回复中，报告哪些链接原本已存在、哪些链接已创建，以及哪些冲突仍需用户处理。

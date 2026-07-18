@@ -1,55 +1,39 @@
 ---
 name: xerrors-design
-description: Xerrors design preference router for UI/UX and frontend work. Use when building, redesigning, reviewing, or polishing Xerrors product interfaces, tool UIs, dashboards, homepages, landing pages, websites, or visual design decisions; especially when deciding whether to follow nextlevelbuilder/ui-ux-pro-max-skill defaults or a taste-skill for more personalized, opinionated, high-taste pages.
+description: Xerrors 的 UI/UX 与前端设计偏好路由器。在构建、重新设计、评审或润色 Xerrors 产品界面、工具 UI、仪表盘、主页、落地页、网站，或进行视觉设计决策时使用；尤其适用于判断应遵循 nextlevelbuilder/ui-ux-pro-max-skill 的默认规范，还是使用 taste-skill 打造更个性化、更具主见和更高审美水准的页面。
 ---
 
-# Xerrors Design
+# Xerrors 设计
 
-## Overview
+## 概述
 
-Use this skill as a lightweight preference layer, not as a complete design
-system. It records Xerrors' default taste and routing preferences for choosing
-the right design guidance before implementing or reviewing an interface.
+将此 skill 用作轻量级偏好层，而不是完整的设计系统。它记录 Xerrors 的默认审美与路由偏好，以便在实现或评审界面之前选择正确的设计指导。
 
-## Skill Routing
+## Skill 路由
 
-In most UI/UX work, follow `nextlevelbuilder/ui-ux-pro-max-skill` as the primary
-design standard. Treat it as the default source for structure, components,
-interaction patterns, responsive behavior, accessibility, and practical product
-UI decisions.
+在大多数 UI/UX 工作中，以 `nextlevelbuilder/ui-ux-pro-max-skill` 作为主要设计规范。将其视为结构、组件、交互模式、响应式行为、无障碍能力和实用产品 UI 决策的默认依据。
 
-Use a `taste-skill` when the task asks for a more personalized, tasteful, or
-strongly art-directed result, especially for:
+当任务要求更个性化、更有品位或具有强烈艺术指导风格的结果时，使用 `taste-skill`，尤其适用于：
 
-- Homepages.
-- Landing pages.
-- Marketing pages.
-- Brand-heavy first impressions.
-- Pages where visual judgment, originality, and editorial polish matter more
-  than standard product UI completeness.
+- 主页。
+- 落地页。
+- 营销页面。
+- 强调品牌第一印象的页面。
+- 相比标准产品 UI 的完整性，更看重视觉判断、原创性和编辑式精致感的页面。
 
-When both apply, use `nextlevelbuilder/ui-ux-pro-max-skill` for product
-correctness and interaction coverage, then apply the `taste-skill` for the
-hero, visual hierarchy, composition, typography tone, and final polish.
+当两者都适用时，先使用 `nextlevelbuilder/ui-ux-pro-max-skill` 保证产品正确性和交互覆盖，再使用 `taste-skill` 优化首屏、视觉层级、构图、字体基调和最终细节。
 
-## Xerrors Preferences
+## Xerrors 偏好
 
-Favor efficient use of design space. Prioritize information density, scanning,
-and visual content throughput: the interface should show useful state, options,
-examples, or results without feeling sparse or padded.
+倾向于高效利用设计空间。优先考虑信息密度、快速浏览和视觉内容吞吐量：界面应展示有用的状态、选项、示例或结果，同时避免显得空旷或被无意义的留白撑大。
 
-For tool products, keep visual design restrained. Avoid excessive visual drama:
-oversized expressive type, heavy shadows, floating decorative surfaces,
-over-designed cards, ornamental gradients, and motion that competes with the
-work. Make tools feel capable, clear, and efficient before making them feel
-showy.
+对于工具型产品，应保持视觉克制。避免过度的视觉戏剧性：尺寸过大的表现型字体、厚重阴影、悬浮装饰表面、设计过度的卡片、纯装饰渐变，以及与实际工作争夺注意力的动效。应先让工具显得强大、清晰、高效，再考虑是否足够吸睛。
 
-## Practical Checks
+## 实用检查
 
-Before finalizing a design, check:
+在最终确定设计之前，检查：
 
-- Is the important content visible without unnecessary empty ceremony?
-- Does the layout improve task throughput or only add visual atmosphere?
-- For a tool UI, would repeated daily use still feel calm and efficient?
-- For a homepage or landing page, is there enough taste and character to feel
-  intentionally designed rather than generic?
+- 重要内容是否无需无意义的空白铺垫就能被看到？
+- 布局是否提升了任务处理效率，还是仅仅增加了视觉氛围？
+- 对于工具 UI，长期每天反复使用时是否依然沉稳高效？
+- 对于主页或落地页，是否具备足够的品位与个性，让人感到它经过有意识的设计，而不是千篇一律？

@@ -1,156 +1,156 @@
 ---
 name: process-arxiv-paper
-description: Process a specific arXiv or arXiv-like research paper, especially in Chinese. Use when a paper title, project name, arXiv ID/URL/PDF/HTML link, or existing paper folder is paired with intent such as 整理, 处理, 收录, 读一下, 看一下, 翻译, 逐句翻译, 论文库, arxiv source, 源码对齐, or 源码伪代码. The workflow saves PDF/source, writes a faithful sentence-by-sentence Chinese Markdown translation, records alphaxiv context, discovers linked code, adds clearly marked code-informed pseudocode notes, and writes uv/demo/evaluation setup notes. Do not use for simple PDF download/copy requests, generic literature surveys, arXiv search lists, submission checklists, unrelated table extraction, or unrelated GitHub/uv refactors.
+description: 处理指定的 arXiv 或类似 arXiv 的研究论文，尤其适用于中文请求。当用户给出论文标题、项目名、arXiv ID/URL/PDF/HTML 链接或已有论文目录，并表达整理、处理、收录、读一下、看一下、翻译、逐句翻译、论文库、arxiv source、源码对齐或源码伪代码等意图时使用。该工作流会保存 PDF/源码，编写忠实的逐句中文 Markdown 译文，记录 alphaxiv 上下文，查找关联代码，添加明确标注的源码辅助伪代码注释，并编写 uv/demo/evaluation 配置说明。不要用于简单的 PDF 下载/复制请求、通用文献综述、arXiv 搜索列表、投稿检查清单、无关的表格提取或无关的 GitHub/uv 重构。
 ---
 
-# Process arXiv Paper
+# 处理 arXiv 论文
 
-## Trigger interpretation
+## 触发请求的解释
 
-When the user asks in Chinese to `整理一下`, `处理一下`, `读一下`, or otherwise broadly process an arXiv paper, treat that as a request for the full workflow in this skill unless they explicitly ask for a summary-only or no-translation output. A faithful sentence-by-sentence Chinese Markdown translation is a required deliverable, not an optional add-on.
+当用户用中文要求对一篇 arXiv 论文“`整理一下`”“`处理一下`”“`读一下`”或进行其他宽泛处理时，除非用户明确只要摘要或不要翻译，否则应将其视为请求执行本 skill 的完整工作流。忠实的逐句中文 Markdown 译文是必需交付物，而不是可选附加项。
 
-Hard requirement: for any paper-processing request in Chinese, including but not limited to `整理`, `收录`, `处理`, `读`, `看`, `分析`, `梳理`, `研究`, `翻译`, `总结一下这篇论文`, or simply giving a paper title/URL in a research-paper context, the default deliverable MUST include a faithful sentence-by-sentence Chinese translation of the full paper. Do not substitute a summary, outline, "整理稿", reading note, or selective translation for the full sentence-by-sentence translation. Only skip or reduce the translation if the user explicitly says they do not want translation, only want a summary, or asks for a different scope. If the user asks for both "整理" and other outputs, complete the full Chinese sentence-by-sentence translation first or make it the central artifact, then add analysis/notes around it.
+硬性要求：对于任何中文论文处理请求，包括但不限于“`整理`”“`收录`”“`处理`”“`读`”“`看`”“`分析`”“`梳理`”“`研究`”“`翻译`”“`总结一下这篇论文`”，或仅在研究论文语境中给出论文标题/URL，默认交付物都**必须**包含全文忠实的逐句中文翻译。不得用摘要、提纲、“整理稿”、阅读笔记或选择性翻译代替完整的逐句翻译。只有当用户明确表示不要翻译、只要摘要或要求其他范围时，才可跳过或缩减翻译。如果用户同时要求“整理”和其他输出，应先完成完整的中文逐句翻译，或以其作为核心产物，再围绕它添加分析/笔记。
 
-## Defaults
+## 默认值
 
-Use these paths unless the user specifies different ones:
+除非用户另有指定，否则使用以下路径：
 
-- Paper outputs: `./<arxiv-prefix>[.<venue>].<short-name>` under the current working directory (`pwd`) where the user invoked the task. Treat the current working directory as the paper workspace root, not the directory where this skill is installed.
-- Source-code clones: `~/Downloads/<arxiv-prefix>[.<venue>].<short-name>` by default. If `~/Downloads` does not exist but `~/downloads` does, use `~/downloads/<arxiv-prefix>[.<venue>].<short-name>` instead.
+- 论文产物：当前工作目录（用户调用任务时的 `pwd`）下的 `./<arxiv-prefix>[.<venue>].<short-name>`。将当前工作目录视为论文工作区根目录，而不是本 skill 的安装目录。
+- 源码仓库克隆：默认使用 `~/Downloads/<arxiv-prefix>[.<venue>].<short-name>`。如果 `~/Downloads` 不存在但 `~/downloads` 存在，则改用 `~/downloads/<arxiv-prefix>[.<venue>].<short-name>`。
 
-Prefer filenames like:
+推荐使用以下文件名：
 
-- PDF: `<arxiv-prefix>[.<venue>].<short-name>_<full-title>.pdf`
-- Chinese translation: `<arxiv-prefix>[.<venue>].<short-name>_zh.md` and begin it with the alphaxiv URL plus an overview block when available
-- arXiv source package: `<arxiv-prefix>[.<venue>].<short-name>_source/`
-- Source clone directory: `~/Downloads/<arxiv-prefix>[.<venue>].<short-name>` or `~/downloads/<arxiv-prefix>[.<venue>].<short-name>`
+- PDF：`<arxiv-prefix>[.<venue>].<short-name>_<full-title>.pdf`
+- 中文译文：`<arxiv-prefix>[.<venue>].<short-name>_zh.md`，并在开头写入 alphaxiv URL，以及可用时的概述区块
+- arXiv 源文件包：`<arxiv-prefix>[.<venue>].<short-name>_source/`
+- 源码克隆目录：`~/Downloads/<arxiv-prefix>[.<venue>].<short-name>` 或 `~/downloads/<arxiv-prefix>[.<venue>].<short-name>`
 
-For `2509.22009` and "GraphSearch", use `2509.GraphSearch` as the prefix when no venue is known. Sanitize filenames for macOS and keep the paper's full title in the PDF filename.
+对于 `2509.22009` 和“GraphSearch”，如果不知道发表场所，则使用 `2509.GraphSearch` 作为前缀。按 macOS 文件名规则清理非法字符，并在 PDF 文件名中保留论文完整标题。
 
-Terminology: "arXiv source package" means the paper's LaTeX/source files downloaded from `https://arxiv.org/e-print/<id>` and stored under `<prefix>_source/` inside the paper output directory. "Source code" means the paper's linked implementation repository and belongs under `~/Downloads` or `~/downloads`, not inside the paper output directory.
+术语：“arXiv 源文件包”是指从 `https://arxiv.org/e-print/<id>` 下载的论文 LaTeX/源文件，保存在论文产物目录内的 `<prefix>_source/` 中。“源码”是指论文关联的实现仓库，应放在 `~/Downloads` 或 `~/downloads` 下，而不是论文产物目录内。
 
-Prefix rules:
+前缀规则：
 
-- Derive `<arxiv-prefix>` from the arXiv ID year-month, e.g. `2407` for `2407.12345` and `2509` for `2509.22009`.
-- Derive `<short-name>` from the paper title, project name, or repository name using a short readable PascalCase token such as `GraphSearch`, `DiffusionForPlanning`, or `AgentMemory`. Prefer an established project/repo name when the paper has one.
-- If the final venue is discovered after output files already exist, treat the venue-aware prefix as a rename operation rather than creating a second paper workspace.
-- Ensure the source-code clone directory never resolves to the same path as the paper output directory. If the default clone path would collide, use `~/Downloads/<prefix>-code` or ask the user before cloning.
+- 根据 arXiv ID 的年月生成 `<arxiv-prefix>`，例如 `2407.12345` 对应 `2407`，`2509.22009` 对应 `2509`。
+- 根据论文标题、项目名或仓库名生成 `<short-name>`，使用简短易读的 PascalCase 标记，例如 `GraphSearch`、`DiffusionForPlanning` 或 `AgentMemory`。如果论文有公认的项目名/仓库名，优先使用它。
+- 如果产物文件已经存在后才发现最终发表场所，应将添加 venue 的前缀视为一次重命名操作，而不是创建第二个论文工作区。
+- 确保源码克隆目录解析后绝不与论文产物目录相同。如果默认克隆路径会发生冲突，使用 `~/Downloads/<prefix>-code`，或在克隆前询问用户。
 
-## Output directory safety check
+## 输出目录安全检查
 
-Before downloading or creating paper outputs, inspect the current working directory with `pwd` and decide whether it is an appropriate paper workspace root.
+下载或创建论文产物前，使用 `pwd` 检查当前工作目录，并判断它是否适合作为论文工作区根目录。
 
-- Safe by default: a project, notes, research, papers, or similar working directory selected by the user; any directory that already contains one or more processed-paper folders.
-- A processed-paper folder is a sibling directory that looks like an arXiv paper workspace, for example a name matching `<yymm>.<short-name>` or `<yymm>.<VENUE>.<short-name>`, or a directory containing generated files such as `*_zh.md`, `*_source/`, or an arXiv PDF.
-- Unsafe by default: the user's home directory (`~`), filesystem roots, system/application/config directories, broad buckets such as Desktop, Documents, or Downloads when they are not clearly being used as a paper workspace, and any unrelated source-code repository or app project that does not already contain similar processed-paper folders.
-- If the current directory is unsafe or ambiguous and it does not contain similar processed-paper folders, ask the user to confirm or provide a different paper workspace directory, then stop. Do not download the PDF, create the paper output folder, or clone source code until the user confirms.
-- If the current directory is unsafe or ambiguous but already contains similar processed-paper folders, proceed and save the new paper output as a sibling folder in that current directory.
+- 默认安全：用户选择的项目、笔记、研究、论文或类似工作目录；任何已经包含一个或多个已处理论文目录的目录。
+- 已处理论文目录是指类似 arXiv 论文工作区的同级目录，例如名称匹配 `<yymm>.<short-name>` 或 `<yymm>.<VENUE>.<short-name>`，或包含 `*_zh.md`、`*_source/`、arXiv PDF 等生成文件的目录。
+- 默认不安全：用户主目录（`~`）、文件系统根目录、系统/应用/配置目录；Desktop、Documents 或 Downloads 等宽泛容器目录（除非它们明显被用作论文工作区）；以及不包含类似已处理论文目录的无关源码仓库或应用项目。
+- 如果当前目录不安全或用途不明确，且不包含类似的已处理论文目录，请用户确认或提供其他论文工作区目录，然后停止。用户确认前，不要下载 PDF、创建论文产物目录或克隆源码。
+- 如果当前目录不安全或用途不明确，但已经包含类似的已处理论文目录，则继续执行，并将新论文产物保存为该目录下的同级目录。
 
-## Existing work and resume behavior
+## 已有工作与恢复行为
 
-When the user asks to continue, resume, rename, repair, or finish an already processed paper, inspect the existing folder before changing anything.
+当用户要求继续、恢复、重命名、修复或完成一篇已经处理过的论文时，在修改任何内容前检查现有目录。
 
-- Look for existing files such as `<prefix>_zh.md`, `<prefix>_translation_progress.md`, `<prefix>_source/`, downloaded PDFs, companion notes, and any source-code clone with the same prefix.
-- Infer the current state from the files: completed sections, pending sections, parsing source used, whether alphaxiv metadata is present, and whether source-code notes or uv instructions already exist.
-- Continue from the first incomplete or suspicious section instead of retranslating completed sections by default. If existing translation quality is clearly broken, explain the issue and repair the affected section rather than silently overwriting the whole file.
-- When a user asks to rename after a venue is found, perform the rename only after confirming the venue from reliable sources. Rename generated paper files and generated source package folders together; preserve user-created notes unless they obviously contain generated paths or generated headings with the old prefix.
-- If the existing state is unclear, write or update a progress marker before doing more work so the next run can resume safely.
+- 查找 `<prefix>_zh.md`、`<prefix>_translation_progress.md`、`<prefix>_source/`、已下载 PDF、配套笔记，以及具有相同前缀的源码克隆目录。
+- 根据文件推断当前状态：已完成章节、待处理章节、使用的解析源、是否已有 alphaxiv 元数据，以及是否已有源码说明或 uv 指令。
+- 默认从第一个未完成或可疑章节继续，而不是重新翻译已完成章节。如果现有译文质量明显有问题，应说明问题并修复受影响章节，不要静默覆盖整份文件。
+- 用户要求在发现发表场所后重命名时，只有从可靠来源确认 venue 后才执行重命名。一起重命名生成的论文文件和源文件包目录；除非用户创建的笔记明显包含旧前缀的生成路径或标题，否则保留不动。
+- 如果现有状态不明确，先写入或更新进度标记，再继续处理，以便下次能够安全恢复。
 
-## Venue-aware naming
+## 根据发表场所命名
 
-- Look up whether the arXiv paper has a final or accepted publication venue such as a conference, workshop, journal, or journal abbreviation. Check arXiv metadata, the PDF/source, project pages, author pages, OpenReview/ACL Anthology/IEEE/ACM/Springer/ScienceDirect pages, and other reliable scholarly indexes when needed.
-- If a venue is found, insert a short venue token after the arXiv year-month prefix: `<yymm>.<VENUE>.<short-name>`. Examples: `2509.ACL2026.GraphTemp` for a conference, `2509.PR.GraphTemp` for the journal Pattern Recognition.
-- Prefer the canonical venue acronym plus year for conferences and workshops, e.g. `ACL2026`, `ICLR2026`, `NeurIPS2026`, `COLM2025`. Prefer a standard journal abbreviation without year for journals, e.g. `PR`, `TKDE`, `TNNLS`, unless the user asks otherwise.
-- If the venue cannot be found quickly or is only an unverified rumor, omit the venue token and keep `<yymm>.<short-name>`. Briefly note that no final venue was found.
-- When renaming an existing processed paper after discovering a venue, rename the paper output directory under the current working directory, the source-code clone directory under `~/Downloads` or `~/downloads` if it exists, and files whose names start with the old prefix. Do not rewrite arbitrary user-created notes unless the old prefix appears in obvious generated paths or headings.
+- 查询 arXiv 论文是否已有最终或接收发表场所，例如会议、Workshop、期刊或期刊缩写。需要时检查 arXiv 元数据、PDF/源文件、项目页、作者主页、OpenReview/ACL Anthology/IEEE/ACM/Springer/ScienceDirect 页面及其他可靠学术索引。
+- 如果找到 venue，在 arXiv 年月前缀后插入简短的 venue 标记：`<yymm>.<VENUE>.<short-name>`。例如会议使用 `2509.ACL2026.GraphTemp`，Pattern Recognition 期刊使用 `2509.PR.GraphTemp`。
+- 对会议和 Workshop，优先使用规范缩写加年份，例如 `ACL2026`、`ICLR2026`、`NeurIPS2026`、`COLM2025`。对期刊，优先使用不带年份的标准缩写，例如 `PR`、`TKDE`、`TNNLS`，除非用户另有要求。
+- 如果无法快速找到 venue，或只有未经证实的传闻，则省略 venue 标记，继续使用 `<yymm>.<short-name>`，并简要注明未找到最终发表场所。
+- 在发现 venue 后重命名已有论文时，应重命名当前工作目录下的论文产物目录、`~/Downloads` 或 `~/downloads` 下存在的源码克隆目录，以及文件名以旧前缀开头的文件。不要改写任意用户笔记，除非旧前缀出现在明显的生成路径或标题中。
 
-## Workflow
+## 工作流
 
-1. Resolve the paper to the canonical arXiv abstract page.
-   - If the user gives an arXiv URL or ID, normalize it to `https://arxiv.org/abs/<id>`.
-   - If the user gives a title or project name, search the web/arXiv and verify the match by title, authors, abstract, and project/repository links. Do not guess if multiple plausible papers remain; ask a concise clarification.
-   - If the user says "this paper", "这个 paper", "这个 repo", or gives only a local repository without enough information to identify a paper, inspect nearby README/project metadata when available. If the paper cannot be identified confidently, ask for the arXiv URL, title, or paper link before creating outputs.
-   - Record the arXiv ID, full title, authors, abstract URL, PDF URL, source package URL, HTML URL, and final/accepted venue if found.
+1. 将论文解析到规范的 arXiv 摘要页。
+   - 如果用户给出 arXiv URL 或 ID，将其规范化为 `https://arxiv.org/abs/<id>`。
+   - 如果用户给出标题或项目名，搜索网页/arXiv，并通过标题、作者、摘要和项目/仓库链接验证匹配结果。如果仍有多个合理候选，不要猜测，应提出简短的澄清问题。
+   - 如果用户只说“this paper”“这个 paper”“这个 repo”，或只给出本地仓库但信息不足以识别论文，在可用时检查附近的 README/项目元数据。如果仍无法可靠识别论文，应先索要 arXiv URL、标题或论文链接，再创建产物。
+   - 记录 arXiv ID、完整标题、作者、摘要 URL、PDF URL、源文件包 URL、HTML URL，以及找到的最终/接收发表场所。
 
-2. Download and save the original paper.
-   - Download the PDF from `https://arxiv.org/pdf/<id>` into the paper outputs folder.
-   - Try to download the arXiv source package from `https://arxiv.org/e-print/<id>` into a dedicated `<prefix>_source/` folder. Treat this as the preferred parsing source when it is available and contains TeX/LaTeX files.
-   - Unpack the source package carefully into that dedicated source folder. It may be a `.tar`, `.tar.gz`, gzip-compressed TeX file, or another arXiv-supported source payload. Do not unpack it over unrelated files.
-   - Preserve the full arXiv title in the filename.
-   - Reuse an existing matching PDF only when it clearly matches the same arXiv ID/title.
+2. 下载并保存原始论文。
+   - 从 `https://arxiv.org/pdf/<id>` 下载 PDF 到论文产物目录。
+   - 尝试从 `https://arxiv.org/e-print/<id>` 下载 arXiv 源文件包，并保存到专用的 `<prefix>_source/` 目录。如果包可用且包含 TeX/LaTeX 文件，应将其作为首选解析源。
+   - 小心地将源文件包解压到该专用源目录。它可能是 `.tar`、`.tar.gz`、gzip 压缩的 TeX 文件，或其他 arXiv 支持的源文件载荷。不要将其解压到无关文件之上。
+   - 在文件名中保留完整的 arXiv 标题。
+   - 只有当现有 PDF 明确匹配同一 arXiv ID/标题时才复用。
 
-3. Produce the Chinese Markdown translation.
-   - Prefer the arXiv LaTeX source package as the primary parsing source when it is available. Parse the main `.tex` file(s), bibliography files, included sections, figure paths, captions, tables, algorithms, equations, labels, and cross-references so the translation preserves the paper's structure and figure information as faithfully as possible.
-   - When using LaTeX source, resolve common TeX commands and included files enough to reconstruct reading order. Preserve figure references and embed or link local figure assets in the Markdown when the source package includes image files. Copy or reference those images from the dedicated source folder rather than inventing placeholder figures.
-   - When the translation Markdown embeds local images, use paths relative to `<prefix>_zh.md` by default, for example `![Figure 1](./<prefix>_source/figures/example.png)` or `![Figure 1](./<prefix>_source/assets/example.png)`. Do not write absolute filesystem paths in the translation unless the user explicitly asks for them.
-   - For long papers, use permitted delegation or subagents for translation chunks when the active runtime and user instructions allow it. The main agent remains responsible for preparing clean source chunks, giving strict formatting instructions, reviewing returned translations, and merging them into the final Markdown. If delegation is unavailable or disallowed, translate section-by-section locally and clearly preserve the full sentence-by-sentence requirement.
-   - If the LaTeX source is unavailable, incomplete, generated in a way that is harder to parse than the rendered page, or missing critical readable content, use the arXiv HTML page (`https://arxiv.org/html/<id>`) as the source for structure, headings, equations, tables, figures, captions, references, and links.
-   - If neither LaTeX source nor HTML is available or sufficiently complete, extract from the PDF with the best local PDF processing tool available. In the PDF-only path, explicitly preserve captions, figure callouts, tables, equations, references, and section ordering as much as extraction allows, and note any unavoidable image/table limitations.
-   - Save a faithful Chinese translation as Markdown in the paper outputs folder. The translation must be a sentence-by-sentence Chinese translation of the original paper, not a summary, paraphrase, rewrite, outline, "整理稿", reading note, or selective extraction.
-   - Translate every sentence in order. Each source sentence must have a corresponding Chinese sentence or paragraph that preserves its meaning; do not combine multiple original paragraphs into a high-level summary, omit "less important" sentences, or replace full passages with bullet-point takeaways.
-   - The translation file should be the primary Chinese artifact and should be named `<prefix>_zh.md`. If a separate summary/analysis is useful, save it as a companion file or clearly separate it after the full translation, never instead of the full translation.
-   - Translate one section at a time for long papers. Complete each section before moving to the next so the output stays aligned with the original and avoids omissions.
-   - Keep every original section, subsection, paragraph, caption, list, table, equation, citation, and reference item in order. Do not delete, merge, reorder, or simplify original content.
-   - Normalize LaTeX line wrapping before translation. In raw LaTeX, a single newline usually reflects source formatting rather than a rendered paragraph break; treat blank lines (`\n\n`) or explicit structural commands as the real paragraph boundaries. Merge wrapped source lines before sending text to the translation subagent.
-   - Preserve rendered paragraph boundaries in the Markdown. Do not introduce new paragraphs just because the TeX source wrapped lines. Keep separate paragraphs only when the original rendered paper has a real paragraph boundary, list item, caption, table row, displayed equation, or section/subsection break.
-   - Preserve all formulas and tables completely. Tables in the final translation MUST use standard Markdown table syntax whenever the table is rectangular enough to represent that way. Do not emit raw HTML table tags such as `<table>`, `<thead>`, `<tbody>`, `<tr>`, `<td>`, `<th>`, or stray HTML captions for normal paper tables. If a table cannot be represented faithfully as a normal Markdown table, rewrite it into a clear Markdown-native structure such as a list plus aligned code block, and explicitly note the limitation.
-   - Remove pure LaTeX bookkeeping commands and artifacts from the final Markdown. Do not keep commands such as `\label{...}`, `\ref{...}`, `\eqref{...}`, `\tag{...}`, `\nonumber`, `\bibliographystyle`, `\bibliography`, or similar source-only control markup unless a literal command is itself being discussed as paper content. Resolve cross-references into readable text instead of exposing raw LaTeX labels.
-   - Reconstruct math formatting thoughtfully instead of mechanically copying extraction artifacts. Use inline math for single symbols and short expressions such as `$q$`, `$\mathcal{G}$`, or `$\pi_{\text{ref}}$`. Use display math only for full standalone equations, aligned equations, cases, optimization objectives, or recurrences.
-   - Never use nested math-delimiter/code patterns such as `$`code`$`, `$`c`$`, or other backtick-inside-math wrappers in the final Markdown. If the content is math, write it as plain math like `$c$`. If the content is code or an identifier rather than math, use plain backticks like ``code`` without surrounding `$...$`.
-   - Hard Markdown math rule: in the final Markdown, inline math MUST use `$...$` and standalone displayed equations MUST use `$$ ... $$`. Never emit fenced code blocks such as ```math ... ``` for equations. For example, write:
+3. 生成中文 Markdown 译文。
+   - 如果 arXiv LaTeX 源文件包可用，优先将其作为主要解析源。解析主 `.tex` 文件、参考文献文件、引入的章节、图片路径、图注、表格、算法、公式、标签和交叉引用，使译文尽可能忠实地保留论文结构和图片信息。
+   - 使用 LaTeX 源文件时，应充分解析常见 TeX 命令和引入文件，以重建阅读顺序。保留图片引用；如果源文件包包含图片资源，在 Markdown 中嵌入或链接这些本地图片。应从专用源目录复制或引用图片，不要虚构占位图。
+   - 译文 Markdown 嵌入本地图片时，默认使用相对于 `<prefix>_zh.md` 的路径，例如 `![图 1](./<prefix>_source/figures/example.png)` 或 `![图 1](./<prefix>_source/assets/example.png)`。除非用户明确要求，否则不要在译文中写绝对文件系统路径。
+   - 对于长论文，当当前运行环境和用户指令允许时，可使用获准的委派或子 Agent 分块翻译。主 Agent 仍负责准备干净的源文本分块、给出严格格式要求、审查返回的译文并合并到最终 Markdown。如果无法或不允许委派，则在本地逐节翻译，并明确遵守完整逐句翻译要求。
+   - 如果 LaTeX 源文件不可用、不完整、其生成方式比渲染页面更难解析，或缺失关键可读内容，则使用 arXiv HTML 页面（`https://arxiv.org/html/<id>`）获取结构、标题、公式、表格、图片、图注、参考文献和链接。
+   - 如果 LaTeX 源和 HTML 都不可用或不够完整，则使用最佳的本地 PDF 处理工具提取内容。仅使用 PDF 时，应在提取能力允许的范围内明确保留图注、图片引用、表格、公式、参考文献和章节顺序，并注明无法避免的图片/表格限制。
+   - 将忠实的中文译文保存为论文产物目录中的 Markdown。译文必须是原论文的逐句中文翻译，而不是摘要、意译、重写、提纲、“整理稿”、阅读笔记或选择性摘录。
+   - 按顺序翻译每个句子。每个源句子都必须有对应的中文句子或段落并保留其含义；不要把多个原始段落合并为高层摘要，不要省略“没那么重要”的句子，也不要用要点代替完整段落。
+   - 译文文件应是主要中文产物，命名为 `<prefix>_zh.md`。如果单独的摘要/分析有帮助，将其保存为配套文件，或明确放在完整译文之后，绝不能用它代替完整译文。
+   - 对长论文逐节翻译。完成当前章节后再进入下一章节，以保持与原文对齐并避免遗漏。
+   - 按原顺序保留所有章节、小节、段落、图注、列表、表格、公式、引文和参考文献条目。不要删除、合并、重排或简化原始内容。
+   - 翻译前规范化 LaTeX 换行。原始 LaTeX 中，单个换行通常只是源文件排版，而不是渲染后的段落分隔；应将空行（`\n\n`）或明确的结构命令视为真正的段落边界。将源文件中因换行而拆开的文本合并后，再发送给翻译子 Agent。
+   - 在 Markdown 中保留渲染后的段落边界。不要仅因为 TeX 源文件换行就创建新段落。只有当原始渲染论文确实存在段落边界、列表项、图注、表格行、独立公式或章节/小节分隔时才另起段落。
+   - 完整保留所有公式和表格。只要表格足够规则，最终译文中的表格就**必须**使用标准 Markdown 表格语法。普通论文表格不得输出 `<table>`、`<thead>`、`<tbody>`、`<tr>`、`<td>`、`<th>` 等原始 HTML 标签或游离的 HTML 标题。如果表格无法用普通 Markdown 表格忠实表达，应改写为清晰的 Markdown 原生结构，例如列表加对齐代码块，并明确说明限制。
+   - 从最终 Markdown 中删除纯 LaTeX 记账命令和伪影。除非论文本身正在讨论某条字面命令，否则不要保留 `\label{...}`、`\ref{...}`、`\eqref{...}`、`\tag{...}`、`\nonumber`、`\bibliographystyle`、`\bibliography` 等仅用于源文件控制的标记。将交叉引用解析为可读文本，不要暴露原始 LaTeX 标签。
+   - 应认真重建数学格式，而不是机械复制提取伪影。单个符号和短表达式使用行内公式，例如 `$q$`、`$\mathcal{G}$` 或 `$\pi_{\text{ref}}$`。只有完整独立公式、对齐公式、分情况公式、优化目标或递推关系才使用块级公式。
+   - 最终 Markdown 中绝不能使用 `$`code`$`、`$`c`$` 或其他在数学定界符中嵌套反引号的形式。如果内容是数学，直接写成 `$c$` 等普通公式；如果内容是代码或标识符，则只使用 ``code`` 等反引号形式，不要再包裹 `$...$`。
+   - Markdown 数学硬性规则：最终 Markdown 中，行内公式**必须**使用 `$...$`，独立块级公式**必须**使用 `$$ ... $$`。绝不能使用 ```math ... ``` 等围栏代码块表示公式。例如应写为：
      `$$
      R = \\operatorname{topK}(\\{(s_i, \\operatorname{overlap}(s_i, T)) \\mid s_i \\in S\\})
      $$`
-     instead of a fenced code block.
-   - Preserve figure captions and references to figures. Include the actual images whenever they are present in the LaTeX source package or arXiv HTML and can be referenced locally or by stable URL. When embedding local images in the translation Markdown, prefer relative paths rooted at the translation file's directory, not absolute filesystem paths. Only omit embedded images when using the PDF-only path or when extraction is genuinely unavailable; in that case, preserve the captions and clearly note the limitation.
-   - Do not rewrite any paper claims. Mark translator notes or code-informed additions explicitly as added notes, for example `> 译注：...`.
-   - For long papers, keep a lightweight progress marker in `<prefix>_translation_progress.md` or a clearly labeled section at the end of the draft translation. Record completed sections, pending sections, the parsing source used, and known extraction issues. Update or remove this marker when the final translation is complete. This prevents a partial long-paper translation from being mistaken for a finished deliverable after context switches or interruptions.
+     而不是数学围栏代码块。
+   - 保留图片标题和图片引用。只要图片存在于 LaTeX 源文件包或 arXiv HTML 中，并且可以通过本地路径或稳定 URL 引用，就应包含实际图片。在译文 Markdown 中嵌入本地图片时，优先使用以译文文件所在目录为基准的相对路径，而不是绝对文件系统路径。只有在仅使用 PDF 或确实无法提取图片时才可省略嵌图；此时仍须保留图注并明确说明限制。
+   - 不得改写论文中的任何主张。译者注或结合源码补充的内容必须明确标记为新增注释，例如 `> 译注：...`。
+   - 对于长论文，在 `<prefix>_translation_progress.md` 中保留轻量级进度标记，或在译文草稿末尾添加明确标注的进度章节。记录已完成章节、待处理章节、使用的解析源和已知提取问题。最终译文完成后更新或删除该标记。这可以防止在上下文切换或中断后，将长论文的部分译文误认为已完成交付物。
 
-4. Write the alphaxiv URL or overview into the translation header.
-   - Use `https://www.alphaxiv.org/zh/overview/<id>`.
-   - At the start of `<prefix>_zh.md`, add a short metadata block that includes the alphaxiv URL.
-   - If the site exposes readable overview content, place a clearly labeled alphaxiv overview section immediately after that metadata block near the top of `<prefix>_zh.md`.
-   - If the site blocks scraping or the overview is not accessible, still record the alphaxiv URL at the start of `<prefix>_zh.md` and briefly note that the overview could not be fetched.
-   - Do not create standalone `<prefix>_alphaxiv.md` or `<prefix>_alphaxiv.url` files.
+4. 在译文页首写入 alphaxiv URL 或概述。
+   - 使用 `https://www.alphaxiv.org/zh/overview/<id>`。
+   - 在 `<prefix>_zh.md` 开头添加包含 alphaxiv URL 的简短元数据区块。
+   - 如果网站提供可读取的概述内容，在元数据区块之后、靠近 `<prefix>_zh.md` 顶部的位置添加明确标注的 alphaxiv 概述章节。
+   - 如果网站阻止抓取或无法访问概述，仍应在 `<prefix>_zh.md` 开头记录 alphaxiv URL，并简要注明无法获取概述。
+   - 不要创建独立的 `<prefix>_alphaxiv.md` 或 `<prefix>_alphaxiv.url` 文件。
 
-5. Discover and clone source code when the paper links to it.
-   - Check the arXiv abstract page, HTML page, PDF text, author/project pages, and Papers with Code/GitHub links.
-   - Clone the repository into `~/Downloads/<arxiv-prefix>[.<venue>].<short-name>` by default, or `~/downloads/<arxiv-prefix>[.<venue>].<short-name>` if that lowercase directory exists and `~/Downloads` does not. Do not clone source code into the paper outputs folder.
-   - If the clone directory already exists, inspect it and update only when that is safe and clearly desired by the user. Never overwrite user changes.
-   - If no source repository can be found, state that explicitly in the final answer.
+5. 当论文关联源码时，发现并克隆源码。
+   - 检查 arXiv 摘要页、HTML 页、PDF 文本、作者/项目页，以及 Papers with Code/GitHub 链接。
+   - 默认将仓库克隆到 `~/Downloads/<arxiv-prefix>[.<venue>].<short-name>`；如果 `~/Downloads` 不存在但小写的 `~/downloads` 存在，则使用后者。不要把源码克隆到论文产物目录中。
+   - 如果克隆目录已经存在，先检查；只有在安全且明确符合用户意图时才更新。绝不能覆盖用户更改。
+   - 如果找不到源码仓库，在最终回复中明确说明。
 
-6. Use source code to augment the translation.
-   - Read the repository README, dependency files, examples, scripts, configs, and key entry points.
-   - Identify the algorithmic pieces that correspond to the paper.
-   - First complete the faithful translation of the relevant original section. Only after the original passage has been translated, insert code-informed pseudocode notes immediately after the relevant paragraph, equation, algorithm, or subsection.
-   - Mark every inserted explanation clearly as non-original content, for example `> 译注：下面是结合源码补充的伪代码解释。` Then use a normal fenced code block such as ```text or ```python for the pseudocode.
-   - Keep pseudocode close to the original concept it explains instead of placing all notes at the end, unless the mapping is broad or uncertain. Do not interrupt a sentence or alter the original translated paragraph; add the note after the translated block.
-   - Do not change the translated original content to make it say something the paper did not say. If the code and paper diverge, explicitly say so in the译注.
-   - If subagents/delegation are available and permitted by the active system instructions, delegate the source-code interpretation and pseudocode mapping to a subagent. Otherwise complete this analysis locally.
+6. 使用源码增强译文。
+   - 阅读仓库 README、依赖文件、示例、脚本、配置和关键入口点。
+   - 找出与论文对应的算法组成部分。
+   - 先完成相关原文章节的忠实翻译。只有在原文段落翻译完成后，才能紧接相关段落、公式、算法或小节插入结合源码的伪代码说明。
+   - 将每段插入的解释明确标记为非原文内容，例如 `> 译注：下面是结合源码补充的伪代码解释。`，然后使用普通的 ```text 或 ```python 围栏代码块放置伪代码。
+   - 除非映射范围很广或不确定，否则应让伪代码紧邻其解释的原始概念，而不是全部放在末尾。不要打断句子或修改原始翻译段落；在翻译区块之后添加注释。
+   - 不要为了迎合源码而修改译文，使论文表达其原本没有提出的内容。如果源码与论文不一致，应在译注中明确说明。
+   - 如果子 Agent/委派可用，并且当前系统指令允许，则将源码解释和伪代码映射委派给子 Agent。否则在本地完成该分析。
 
-7. Write usage and UV startup notes.
-   - In the Chinese Markdown translation or a clearly named companion section/file, summarize how to run the project with `uv`.
-   - Include dependency setup, suggested `uv venv`/`uv sync`/`uv pip install -e .` commands as appropriate to the repo, demo or evaluation commands, required datasets, model/API credentials, environment variables, and any expected outputs.
-   - Distinguish confirmed instructions from inferred instructions. If the repo lacks `pyproject.toml` or first-class `uv` support, explain the safest inferred `uv` workflow instead of pretending it is official.
+7. 编写使用方法与 UV 启动说明。
+   - 在中文 Markdown 译文或命名清晰的配套章节/文件中，总结如何使用 `uv` 运行项目。
+   - 根据仓库实际情况，包含依赖配置、建议的 `uv venv`/`uv sync`/`uv pip install -e .` 命令、demo 或 evaluation 命令、所需数据集、模型/API 凭据、环境变量和预期输出。
+   - 区分已确认的指令和推断的指令。如果仓库没有 `pyproject.toml` 或原生 `uv` 支持，应说明最安全的推断性 `uv` 工作流，不要假装它是官方说明。
 
-8. Verify outputs before finishing.
-   - Confirm the PDF and Chinese Markdown exist in the paper outputs folder.
-   - Confirm the paper output directory and source-code clone directory are distinct paths.
-   - Confirm which parsing source was used: arXiv LaTeX source, arXiv HTML, or PDF extraction. If LaTeX source was skipped, record why. If images were omitted, record why.
-   - Confirm that the Chinese Markdown is a full sentence-by-sentence translation, not merely a summary or structured notes. Before finalizing, spot-check at least the abstract, introduction, method section, experiments/results section, limitations/ethics if present, and references/appendix handling against the source. If any section is only summarized or omitted, continue translating and do not report the workflow as complete.
-   - Confirm no stale progress marker says sections are still pending. If the translation is intentionally incomplete because the user asked to stop early, say that clearly and do not describe it as complete.
-   - Confirm that paragraph boundaries in the Chinese Markdown match the rendered paper rather than raw LaTeX line wrapping.
-   - Confirm that `<prefix>_zh.md` starts with the alphaxiv URL and that no standalone alphaxiv artifact file was created.
-   - Confirm the source clone location, or explain why no repository was cloned.
-   - In the final response, report the saved file paths and any unresolved caveats.
+8. 完成前验证产物。
+   - 确认 PDF 和中文 Markdown 存在于论文产物目录中。
+   - 确认论文产物目录与源码克隆目录是两个不同路径。
+   - 确认使用了哪种解析源：arXiv LaTeX 源文件、arXiv HTML 或 PDF 提取。如果跳过 LaTeX 源文件，记录原因。如果省略图片，记录原因。
+   - 确认中文 Markdown 是完整的逐句翻译，而不仅是摘要或结构化笔记。最终完成前，至少将摘要、引言、方法章节、实验/结果章节、限制/伦理章节（如有），以及参考文献/附录的处理与原文抽查对照。如果有任何章节仅被总结或遭到遗漏，继续翻译，不要报告工作流已经完成。
+   - 确认没有过时的进度标记仍声称存在待处理章节。如果因为用户要求提前停止而有意保留不完整译文，应明确说明，不要将其描述为完整译文。
+   - 确认中文 Markdown 中的段落边界与渲染后的论文一致，而不是跟随原始 LaTeX 的源码换行。
+   - 确认 `<prefix>_zh.md` 以 alphaxiv URL 开头，并且没有创建独立的 alphaxiv 产物文件。
+   - 确认源码克隆位置，或解释为何没有克隆仓库。
+   - 在最终回复中报告保存的文件路径和所有未解决的注意事项。
 
-## Tooling Notes
+## 工具说明
 
-- Browse the web for current arXiv, alphaxiv, and repository information; these sources can change.
-- Prefer structured sources and official pages: arXiv abstract/source/HTML/PDF, the paper's linked repository, and official project pages. For translation extraction, the priority order is arXiv LaTeX source first, arXiv HTML second, and PDF processing tools last.
-- For large translations, work in sections and save incrementally. Keep Markdown readable rather than trying to mirror every HTML artifact exactly. When delegating sections to a translation subagent, send normalized paragraph blocks instead of raw wrapped LaTeX lines.
-- When normalizing math for Markdown output, convert displayed equations to `$$ ... $$` blocks and inline expressions to `$...$`. Do not use fenced code blocks with `math` info strings in the final deliverable.
-- For tables, prefer clean Markdown tables with corrected headers over source-faithful HTML dumps. If extraction produces malformed headers, duplicated caption rows, or incorrect column labels, fix them before saving the translation instead of preserving the broken structure.
-- Strip source-only LaTeX artifacts such as `\label{...}` from the final Markdown, and never mix inline code ticks into math delimiters such as `$`c`$`.
-- In generated Markdown, prefer portable relative links for local assets, especially figure/image references. The translation should remain movable within the paper output folder without breaking image rendering.
-- Do not use hard-coded personal absolute paths for paper outputs or source-code clones. Paper outputs belong in a new processed-paper folder under the current working directory after the safety check passes. Source-code clones belong under `~/Downloads` or `~/downloads`.
+- 通过网页获取最新的 arXiv、alphaxiv 和仓库信息；这些来源可能发生变化。
+- 优先使用结构化来源和官方页面：arXiv 摘要/源文件/HTML/PDF、论文关联仓库和官方项目页。翻译提取的优先顺序为：先用 arXiv LaTeX 源文件，其次用 arXiv HTML，最后才使用 PDF 处理工具。
+- 对大型翻译按章节处理并增量保存。保持 Markdown 易读，不要试图精确复制每个 HTML 伪影。将章节委派给翻译子 Agent 时，发送规范化的段落块，而不是带有原始换行的 LaTeX 文本。
+- 为 Markdown 输出规范化数学公式时，将块级公式转换为 `$$ ... $$`，行内表达式转换为 `$...$`。最终交付物中不要使用 info string 为 `math` 的围栏代码块。
+- 表格应优先使用修正过表头的清晰 Markdown 表格，而不是忠实复制源文件中的 HTML。若提取结果包含畸形表头、重复标题行或错误列名，应在保存译文前修正，不要保留损坏的结构。
+- 从最终 Markdown 中移除 `\label{...}` 等仅用于源文件的 LaTeX 伪影，绝不要在数学定界符内混入行内代码反引号，例如 `$`c`$`。
+- 在生成的 Markdown 中，本地资源尤其是图片引用应优先使用可移植的相对链接。译文在论文产物目录中移动后，图片渲染仍应正常工作。
+- 不要硬编码个人绝对路径作为论文产物或源码克隆路径。通过安全检查后，论文产物应位于当前工作目录下新建的已处理论文目录中；源码克隆应位于 `~/Downloads` 或 `~/downloads`。
