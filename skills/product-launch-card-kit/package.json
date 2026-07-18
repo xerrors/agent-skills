@@ -1,14 +1,18 @@
 {
   "name": "product-launch-card-kit",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
-  "description": "Persistent dev server + PNG exporter for the product launch card skill. Zero runtime dependencies; uses only Node.js built-ins.",
+  "description": "Node.js framework and theme system for product launch cards, copy, PNG and video exports.",
   "scripts": {
+    "create": "node scripts/create-project.js",
     "serve": "node scripts/dev-server.js",
-    "export": "node scripts/export-cards.js"
+    "export:png": "node scripts/export-cards.js",
+    "export:video": "node scripts/render-video.js"
   },
   "bin": {
+    "launch-card-create": "scripts/create-project.js",
     "launch-card-serve": "scripts/dev-server.js",
-    "launch-card-export": "scripts/export-cards.js"
+    "launch-card-export": "scripts/export-cards.js",
+    "launch-card-video": "scripts/render-video.js"
   }
 }

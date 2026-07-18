@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{{PROJECT_NAME}} 发布工作台</title>
+  <link rel="stylesheet" href="framework/framework.css">
+  <link rel="stylesheet" href="theme/product-showcase.css">
+</head>
+<body>
+<div class="launch-workbench">
+  <main class="launch-stage-panel">
+    <header class="launch-toolbar">
+      <div class="launch-toolbar-title"><span class="launch-mark">产</span><span>{{PROJECT_NAME}} 发布工作台</span></div>
+      <div class="launch-controls">
+        <button class="launch-button" type="button" data-launch-prev>上一张</button>
+        <div class="launch-dots" data-launch-dots></div>
+        <span class="launch-counter" data-launch-counter></span>
+        <button class="launch-button" type="button" data-launch-next>下一张</button>
+        <button class="launch-button" type="button" data-export-png>生成 PNG</button>
+        <button class="launch-button" type="button" data-export-video>生成视频</button>
+        <a class="launch-button" data-download-video href="video/{{STORY_ID}}.mp4" download>视频</a>
+        <a class="launch-button is-primary" data-download-png download>PNG</a>
+      </div>
+    </header>
+    <section class="launch-stage">
+      <div class="launch-deck" data-launch-deck>
+        <article class="launch-card product-showcase-card is-active" data-layout="cover">
+          <div class="theme-inner">
+            <div class="theme-top"><div class="theme-brand"><span class="theme-brand-mark">LOGO</span>{{PROJECT_NAME}} {{VERSION}}</div><span class="theme-page">01 / 06</span></div>
+            <div class="theme-content">
+              <h1 class="theme-cover-title">用一句明确的话说明<br><span class="theme-highlight">本次发布的核心价值</span></h1>
+              <div class="theme-screen theme-cover-screen"><img class="theme-placeholder" data-replaceable-image src="theme/placeholder.svg?slot=cover" alt="替换为 16:9 产品主截图，展示用户最容易理解的核心界面"></div>
+              <div class="theme-cover-note">用一到两行补充产品定位、适用对象或版本变化。</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="launch-card product-showcase-card" data-layout="overview">
+          <div class="theme-inner">
+            <div class="theme-top"><div class="theme-brand"><span class="theme-brand-mark">LOGO</span>{{PROJECT_NAME}} {{VERSION}}</div><span class="theme-page">02 / 06</span></div>
+            <div class="theme-content">
+              <h2 class="theme-title">本次升级的<br><span class="theme-highlight">六条主线</span></h2>
+              <p class="theme-lead">每个格子只写一个变化，描述长度尽量均衡。</p>
+              <div class="theme-grid is-overview">
+                <div class="theme-item is-primary"><strong>{{VERSION}}</strong><p>版本定位和主要范围。</p></div>
+                <div class="theme-item"><strong>01 第一项更新</strong><p>一句话说明用户获得什么。</p></div>
+                <div class="theme-item"><strong>02 第二项更新</strong><p>一句话说明用户获得什么。</p></div>
+                <div class="theme-item"><strong>03 第三项更新</strong><p>一句话说明用户获得什么。</p></div>
+                <div class="theme-item"><strong>04 第四项更新</strong><p>一句话说明用户获得什么。</p></div>
+                <div class="theme-item is-cyan"><strong>05 第五项更新</strong><p>一句话说明用户获得什么。</p></div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="launch-card product-showcase-card" data-layout="feature">
+          <div class="theme-inner">
+            <div class="theme-top"><div class="theme-brand"><span class="theme-brand-mark">LOGO</span>{{PROJECT_NAME}} {{VERSION}}</div><span class="theme-page">03 / 06</span></div>
+            <div class="theme-feature-stack">
+              <div><h2 class="theme-title">重点功能的<br><span class="theme-highlight">用户可见变化</span></h2><p class="theme-lead">解释截图中能够直接验证的事实。</p></div>
+              <div class="theme-screen"><img class="theme-placeholder" data-replaceable-image src="theme/placeholder.svg?slot=feature" alt="替换为功能截图，保留关键导航、状态和操作入口"></div>
+              <div class="theme-bullets"><div class="theme-bullet"><b>变化一：</b>说明新的工作方式。</div><div class="theme-bullet"><b>变化二：</b>说明体验或效率收益。</div></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="launch-card product-showcase-card" data-layout="terminal">
+          <div class="theme-inner">
+            <div class="theme-top"><div class="theme-brand"><span class="theme-brand-mark">LOGO</span>{{PROJECT_NAME}} {{VERSION}}</div><span class="theme-page">04 / 06</span></div>
+            <div class="theme-content"><h2 class="theme-title">用实际命令或流程<br>说明<span class="theme-highlight">怎么使用</span></h2><p class="theme-lead">适合 CLI、API、安装流程或可复现操作。</p><div class="theme-terminal"><div class="comment"># 安装或连接</div><div><span class="prompt">$</span> product install</div><br><div class="comment"># 执行核心工作流</div><div><span class="prompt">$</span> product run --project demo</div><div>✓ operation completed</div></div></div>
+          </div>
+        </article>
+
+        <article class="launch-card product-showcase-card" data-layout="compatibility">
+          <div class="theme-inner">
+            <div class="theme-top"><div class="theme-brand"><span class="theme-brand-mark">LOGO</span>{{PROJECT_NAME}} {{VERSION}}</div><span class="theme-page">05 / 06</span></div>
+            <div class="theme-content"><h2 class="theme-title">升级或使用前<br>先确认<span class="theme-highlight">这些事项</span></h2><p class="theme-lead">只保留会影响用户决策和操作的提醒。</p><div class="theme-grid theme-warning-grid"><div class="theme-item"><strong>权限或账号</strong><p>明确谁会受到影响，以及要做什么。</p></div><div class="theme-item"><strong>配置或环境</strong><p>说明必须设置的变量或部署条件。</p></div><div class="theme-item"><strong>数据或迁移</strong><p>说明升级顺序和备份要求。</p></div><div class="theme-item"><strong>兼容性边界</strong><p>说明版本、平台或已知限制。</p></div></div></div>
+          </div>
+        </article>
+
+        <article class="launch-card product-showcase-card" data-layout="final">
+          <div class="theme-inner">
+            <div class="theme-top"><div class="theme-brand"><span class="theme-brand-mark">LOGO</span>{{PROJECT_NAME}} {{VERSION}}</div><span class="theme-page">06 / 06</span></div>
+            <div class="theme-content"><h2 class="theme-title">用一句话收束<br><span class="theme-highlight">产品的新位置</span></h2><p class="theme-lead">总结本次发布如何改变产品能力或工作流。</p><div class="theme-final-grid"><div class="theme-screen"><img class="theme-placeholder" data-replaceable-image src="theme/placeholder.svg?slot=final-main" alt="替换为主结果截图"></div><div class="theme-screen"><img class="theme-placeholder" data-replaceable-image src="theme/placeholder.svg?slot=final-detail" alt="替换为细节截图"></div><div class="theme-screen"><img class="theme-placeholder" data-replaceable-image src="theme/placeholder.svg?slot=final-flow" alt="替换为工作流截图"></div></div><div class="theme-final-cta">邀请读者讨论最想尝试的功能、经验或踩坑。</div></div>
+          </div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <aside class="launch-side-panel">
+    <h2>发布内容</h2>
+    <p>卡片、图片、音频、文案和导出都由 framework 管理；本页视觉来自 product-showcase theme。</p>
+
+    <section class="launch-resource-block" data-audio-manager>
+      <div class="launch-resource-head"><b>背景音乐</b><div class="launch-resource-actions"><button class="launch-button" type="button" data-audio-upload>上传音频</button></div></div>
+      <input type="file" accept="audio/mpeg,audio/wav,audio/mp4,audio/ogg" hidden>
+      <div class="launch-audio-name" data-audio-name>尚未选择音频</div>
+      <audio class="launch-audio-player" controls preload="metadata" hidden></audio>
+    </section>
+
+    <section class="launch-copy-block"><div class="launch-copy-head"><b>标题备选</b><button class="launch-button" type="button" data-copy-target="titles">复制</button></div><pre class="launch-copy-text" id="titles">1. {{PROJECT_NAME}} {{VERSION}} 更新了什么？
+2. 从核心功能到工程体验，这次版本升级值得看什么？
+3. {{PROJECT_NAME}} 的新版本，把关键工作流重新理顺了</pre></section>
+    <section class="launch-copy-block"><div class="launch-copy-head"><b>推荐标题</b><button class="launch-button" type="button" data-copy-target="recommended">复制</button></div><pre class="launch-copy-text" id="recommended">{{PROJECT_NAME}} {{VERSION}} 更新了什么？</pre></section>
+    <section class="launch-copy-block"><div class="launch-copy-head"><b>正文</b><button class="launch-button" type="button" data-copy-target="bodycopy">复制</button></div><pre class="launch-copy-text" id="bodycopy">用短段落说明版本背景、主要变化、适用对象、升级提醒和讨论问题。</pre></section>
+    <section class="launch-copy-block"><div class="launch-copy-head"><b>话题标签</b><button class="launch-button" type="button" data-copy-target="tags">复制</button></div><pre class="launch-copy-text" id="tags">#产品更新 #开源项目 #开发者工具</pre></section>
+  </aside>
+</div>
+<script>window.LAUNCH_CONFIG={cards:{outputDirectory:"previews",prefix:"{{CARD_PREFIX}}"},video:{output:"video/{{STORY_ID}}.mp4"}};</script>
+<script src="framework/framework.js"></script>
+</body>
+</html>

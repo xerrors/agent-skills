@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000">
+  <defs>
+    <pattern id="grid" width="64" height="64" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <rect width="32" height="64" fill="#f7faf9"/>
+      <rect x="32" width="32" height="64" fill="#edf4f2"/>
+    </pattern>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#grid)"/>
+  <rect x="380" y="270" width="840" height="460" rx="20" fill="#ffffff" stroke="#9fb8b6" stroke-width="4"/>
+  <path d="M520 620l190-190 145 145 94-94 132 139H520z" fill="#b8edf0" stroke="#087f86" stroke-width="8" stroke-linejoin="round"/>
+  <circle cx="1040" cy="400" r="55" fill="#c9f35a" stroke="#102128" stroke-width="8"/>
+  <text x="800" y="815" text-anchor="middle" fill="#52666d" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif" font-size="44" font-weight="700">点击上传产品截图</text>
+</svg>

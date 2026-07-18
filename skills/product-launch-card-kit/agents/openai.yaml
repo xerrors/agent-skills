@@ -1,0 +1,4 @@
+interface:
+  display_name: "产品发布素材工具箱"
+  short_description: "用 Node 工作台和主题系统制作发布卡片与视频"
+  default_prompt: "使用 $product-launch-card-kit 为这个产品创建一套可导出 PNG 和视频的发布素材。"

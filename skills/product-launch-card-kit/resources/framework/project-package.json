@@ -1,0 +1,11 @@
+{
+  "name": "product-launch-workbench",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Node.js product launch card workbench",
+  "scripts": {
+    "serve": "node framework/server.js .",
+    "export:png": "node framework/export-cards.js --project .",
+    "export:video": "node framework/render-video.js --project ."
+  }
+}

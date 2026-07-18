@@ -1,55 +1,25 @@
-# Story Patterns
+# 发布叙事模式
 
-Use these patterns to avoid flat "I built a tool" launch copy.
+## 痛点优先
 
-## Pain First
+适合用户已经明确感受到问题的产品。先用日常语言说出痛点，再解释旧方式为什么不够，随后展示产品如何改变工作流，最后用真实界面证明。
 
-Best when users already feel the problem.
+## 版本变化
 
-1. Name the pain in ordinary language.
-2. Show why existing habits are not enough.
-3. Introduce the product as a workflow shift.
-4. Show the real interface.
-5. Close with who should try it.
+适合成熟产品和版本发布。顺序通常是：版本定位 → 升级总览 → 重点功能 → 工作流或技术入口 → 体验细节 → 兼容性提醒 → 收束。每页只讲一个可验证变化。
 
-Example hook: `AI 写的 Markdown，为什么你不想读？`
+## 前后对比
 
-## Timely Debate
+适合截图差异明显的产品。先展示旧流程的冗长、分散或手工操作，再展示新界面和结果；机制解释放在视觉证据之后。
 
-Best when there is a recent public discussion, product launch, framework change, or creator quote.
+## 工作流定义
 
-1. Reference the discussion lightly.
-2. Avoid making the post depend on gossip or authority.
-3. Extract the durable question behind the trend.
-4. Show how the product answers that question.
+适合开发者工具、Agent Skill、插件和开源项目。说明旧边界、新分工、输入来源、执行过程、输出结果，以及审核、确认、权限或导出等控制点。
 
-Example: `大家在讨论 Agent 输出 HTML；真正的问题是，人看的那层输出该升级了。`
+## 适用对象
 
-## Before And After
+用一张卡片明确“适合谁、不适合谁、能力边界是什么”。边界可以包括本地或云端、协作规模、隐私、数据库、平台和兼容版本。清晰边界比笼统承诺更可信。
 
-Best when screenshots are strong.
+## 热点切入
 
-1. Before: long text, scattered chat, manual status tracking, or awkward workflow.
-2. After: compact board, table, detail panel, generated asset, or one-click action.
-3. Explain the mechanism after the visual proof, not before.
-
-## Workflow Definition
-
-Best for developer tools, agent skills, plugins, and open-source utilities.
-
-1. Show the old workflow boundary.
-2. Name the new division of labor.
-3. Show the protocol or file source.
-4. Show the UI layer.
-5. Explain control points such as review, confirmation, or export.
-
-## Audience Fit
-
-Use one card to say who it is for and not for. This increases trust.
-
-Good structure:
-
-- `For`: target users with repeated pain.
-- `Not for`: enterprise workflows, heavy teams, or use cases the tool does not claim.
-- `Boundary`: local, SaaS, database, privacy, or collaboration limits.
-
+可以轻量引用近期讨论或行业变化，但内容不能依赖八卦或权威背书。提炼热点背后的长期问题，再展示产品如何回答这个问题，避免强行站队和夸大结论。
