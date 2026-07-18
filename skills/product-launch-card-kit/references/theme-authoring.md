@@ -13,6 +13,8 @@ resources/themes/<theme-name>/
 
 可以额外包含 SVG、字体或其他只属于该主题的静态资源。生成器会把这些资源复制到项目的 `theme/` 目录。
 
+共享参考动画位于 `resources/animates/`，不属于某一个主题。生成器会把 `animate.css` 复制到项目的 `theme/animate.css`；主题可以覆盖动画变量，但不要复制 framework 的视频导出逻辑。
+
 ## DESIGN.md
 
 使用中文说明：
@@ -30,7 +32,7 @@ resources/themes/<theme-name>/
 
 模板必须：
 
-- 引用 `framework/framework.css`、`theme/<theme-name>.css` 和 `framework/framework.js`。
+- 引用 `framework/framework.css`、`theme/<theme-name>.css`、`theme/animate.css` 和 `framework/framework.js`。
 - 每张卡片使用 `.launch-card`；当前卡片由 framework 添加 `.is-active`。
 - 保留 framework 所需的 `data-launch-*`、`data-export-*`、`data-copy-target` 和 `data-audio-*` 接口。
 - 使用 `{{STORY_ID}}`、`{{PROJECT_NAME}}`、`{{VERSION}}`、`{{CARD_PREFIX}}` 作为生成变量。
@@ -38,6 +40,14 @@ resources/themes/<theme-name>/
 - 把标题、正文、标签等发布文案放在可见侧栏，不隐藏在脚本常量中。
 
 Theme 可以改变卡片内部结构，但不能复制或改写图片上传、音频上传、文案复制、PNG 导出和视频导出代码。
+
+## 动画
+
+- 默认使用 `theme/animate.css` 的缓入动画，并把它视为可调整参考。
+- 主题可以覆盖 `--launch-animate-duration`、`--launch-animate-easing`、`--launch-animate-distance` 和 `--launch-animate-stagger`。
+- PNG 导出必须禁用动画并显示最终状态。
+- 必须尊重 `prefers-reduced-motion`。
+- 标准视频通过 Chrome 逐帧捕获同一份 CSS 动画。复杂交互、三维或长时间线动画仍应使用独立动画工程。
 
 ## CSS
 
@@ -64,4 +74,5 @@ Theme CSS 只负责 `.launch-card` 内部和主题专属组件。工作台外壳
 4. 文案复制、音频上传与试听正常。
 5. PNG 导出尺寸正确，卡片无溢出。
 6. 视频包含所有页面，视觉切换和背景音乐节奏合理。
-7. 主题目录没有服务器或导出实现。
+7. 网页元素缓入正常，PNG 为稳定末帧，减少动态偏好生效。
+8. 主题目录没有服务器或导出实现。

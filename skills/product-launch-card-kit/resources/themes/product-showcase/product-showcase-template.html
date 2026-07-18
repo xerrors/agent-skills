@@ -6,21 +6,21 @@
   <title>{{PROJECT_NAME}} 发布工作台</title>
   <link rel="stylesheet" href="framework/framework.css">
   <link rel="stylesheet" href="theme/product-showcase.css">
+  <link rel="stylesheet" href="theme/animate.css">
 </head>
 <body>
 <div class="launch-workbench">
   <main class="launch-stage-panel">
     <header class="launch-toolbar">
-      <div class="launch-toolbar-title"><span class="launch-mark">产</span><span>{{PROJECT_NAME}} 发布工作台</span></div>
       <div class="launch-controls">
-        <button class="launch-button" type="button" data-launch-prev>上一张</button>
+        <button class="launch-button is-nav" type="button" data-launch-prev aria-label="上一张" title="上一张"></button>
         <div class="launch-dots" data-launch-dots></div>
         <span class="launch-counter" data-launch-counter></span>
-        <button class="launch-button" type="button" data-launch-next>下一张</button>
+        <button class="launch-button is-nav" type="button" data-launch-next aria-label="下一张" title="下一张"></button>
         <button class="launch-button" type="button" data-export-png>生成 PNG</button>
         <button class="launch-button" type="button" data-export-video>生成视频</button>
         <a class="launch-button" data-download-video href="video/{{STORY_ID}}.mp4" download>视频</a>
-        <a class="launch-button is-primary" data-download-png download>PNG</a>
+        <a class="launch-button is-primary" data-download-png download hidden>PNG ZIP</a>
       </div>
     </header>
     <section class="launch-stage">

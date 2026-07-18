@@ -1,0 +1,89 @@
+:root {
+  --launch-animate-duration: 760ms;
+  --launch-animate-easing: cubic-bezier(0.22, 1, 0.36, 1);
+  --launch-animate-distance: 28px;
+  --launch-animate-stagger: 90ms;
+}
+
+@keyframes launch-element-ease-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--launch-animate-distance)) scale(0.992);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes launch-element-soft-in {
+  from { opacity: 0; transform: translateY(calc(var(--launch-animate-distance) * 0.55)); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.launch-card.is-active .theme-top,
+.launch-card.is-active .theme-content > *,
+.launch-card.is-active .theme-feature-stack > * {
+  animation: launch-element-ease-in var(--launch-animate-duration) var(--launch-animate-easing) both;
+}
+
+.launch-card.is-active .theme-top { animation-delay: 0ms; }
+.launch-card.is-active .theme-content > :nth-child(1),
+.launch-card.is-active .theme-feature-stack > :nth-child(1) { animation-delay: var(--launch-animate-stagger); }
+.launch-card.is-active .theme-content > :nth-child(2),
+.launch-card.is-active .theme-feature-stack > :nth-child(2) { animation-delay: calc(var(--launch-animate-stagger) * 2); }
+.launch-card.is-active .theme-content > :nth-child(3),
+.launch-card.is-active .theme-feature-stack > :nth-child(3) { animation-delay: calc(var(--launch-animate-stagger) * 3); }
+.launch-card.is-active .theme-content > :nth-child(4),
+.launch-card.is-active .theme-feature-stack > :nth-child(4) { animation-delay: calc(var(--launch-animate-stagger) * 4); }
+.launch-card.is-active .theme-content > :nth-child(n + 5),
+.launch-card.is-active .theme-feature-stack > :nth-child(n + 5) { animation-delay: calc(var(--launch-animate-stagger) * 5); }
+
+.launch-card.is-active .theme-grid > *,
+.launch-card.is-active .theme-bullets > *,
+.launch-card.is-active .theme-final-grid > *,
+.launch-card.is-active .handoff-steps > *,
+.launch-card.is-active .privacy-points > *,
+.launch-card.is-active .metric-grid > * {
+  animation: launch-element-soft-in calc(var(--launch-animate-duration) * 0.9) var(--launch-animate-easing) both;
+}
+
+.launch-card.is-active .theme-grid > :nth-child(1),
+.launch-card.is-active .theme-bullets > :nth-child(1),
+.launch-card.is-active .theme-final-grid > :nth-child(1),
+.launch-card.is-active .handoff-steps > :nth-child(1),
+.launch-card.is-active .privacy-points > :nth-child(1),
+.launch-card.is-active .metric-grid > :nth-child(1) { animation-delay: calc(var(--launch-animate-stagger) * 3); }
+
+.launch-card.is-active .theme-grid > :nth-child(2),
+.launch-card.is-active .theme-bullets > :nth-child(2),
+.launch-card.is-active .theme-final-grid > :nth-child(2),
+.launch-card.is-active .handoff-steps > :nth-child(2),
+.launch-card.is-active .privacy-points > :nth-child(2),
+.launch-card.is-active .metric-grid > :nth-child(2) { animation-delay: calc(var(--launch-animate-stagger) * 4); }
+
+.launch-card.is-active .theme-grid > :nth-child(3),
+.launch-card.is-active .theme-final-grid > :nth-child(3),
+.launch-card.is-active .handoff-steps > :nth-child(3),
+.launch-card.is-active .privacy-points > :nth-child(3),
+.launch-card.is-active .metric-grid > :nth-child(3) { animation-delay: calc(var(--launch-animate-stagger) * 5); }
+
+.launch-card.is-active .theme-grid > :nth-child(n + 4),
+.launch-card.is-active .metric-grid > :nth-child(n + 4) { animation-delay: calc(var(--launch-animate-stagger) * 6); }
+
+html[data-export="1"]:not([data-video="1"]) .launch-card *,
+html[data-export="1"]:not([data-video="1"]) .launch-card *::before,
+html[data-export="1"]:not([data-video="1"]) .launch-card *::after {
+  animation: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .launch-card *,
+  .launch-card *::before,
+  .launch-card *::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+  }
+}

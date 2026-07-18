@@ -80,6 +80,7 @@ const mimeTypes = {
   ".m4a": "audio/mp4",
   ".ogg": "audio/ogg",
   ".mp4": "video/mp4",
+  ".zip": "application/zip",
   ".md": "text/plain; charset=utf-8"
 };
 

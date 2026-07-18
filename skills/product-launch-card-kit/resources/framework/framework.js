@@ -11,6 +11,7 @@
   let serverAvailable = false;
 
   document.documentElement.dataset.export = params.get("export") === "1" ? "1" : "0";
+  document.documentElement.dataset.video = params.get("video") === "1" ? "1" : "0";
 
   function toast(message) {
     const element = document.createElement("div");
@@ -32,7 +33,6 @@
     cards.forEach((card, cardIndex) => card.classList.toggle("is-active", cardIndex === current));
     if (dots) Array.from(dots.children).forEach((dot, dotIndex) => dot.classList.toggle("is-active", dotIndex === current));
     if (counter) counter.textContent = `${String(current + 1).padStart(2, "0")} / ${String(cards.length).padStart(2, "0")}`;
-    if (currentPng && config) currentPng.href = `${config.cards.outputDirectory}/${config.cards.prefix}-${String(current + 1).padStart(2, "0")}.png`;
   }
 
   function updateScale() {
@@ -157,6 +157,12 @@
         videoLink.href = relative || config.video.output;
         videoLink.hidden = false;
       }
+      if (endpoint.endsWith("png") && currentPng && result.archive) {
+        currentPng.href = result.archive;
+        currentPng.download = result.archiveName || "launch-cards.zip";
+        currentPng.hidden = false;
+        currentPng.click();
+      }
       toast(endpoint.endsWith("video") ? "视频导出完成" : "PNG 导出完成");
     } catch (error) { toast(error.message || "导出失败"); }
     finally { setBusy(button, false); }
@@ -177,6 +183,7 @@
         videoLink.href = config.video.output;
         videoLink.hidden = !serverAvailable;
       }
+      if (currentPng) currentPng.hidden = true;
       setupAudioManager();
       show(current);
     })
