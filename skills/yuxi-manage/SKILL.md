@@ -1,16 +1,17 @@
 ---
 name: yuxi-manage
-description: 管理 xerrors/Yuxi GitHub 项目的开发工作与报告。在 Yuxi 项目内工作、开始或完成 Yuxi 开发任务、更新 Yuxi GitHub Project，或询问 Yuxi Star、PR、CI、评审、路线图或仓库近期活动时使用此 skill。
+description: 管理 xerrors/Yuxi GitHub 项目的开发工作与报告。在 Yuxi 项目内工作、快速实现 feature、开始或完成 Yuxi 开发任务、更新 Yuxi GitHub Project，或询问 Yuxi Star、PR、CI、评审、路线图或仓库近期活动时使用此 skill。
 ---
 
 # Yuxi 管理
 
-使用此 skill 回答与 `xerrors/Yuxi` GitHub 仓库及其维护者 GitHub Project 相关的运营问题。该 skill 包含四个核心领域：
+使用此 skill 回答与 `xerrors/Yuxi` GitHub 仓库及其维护者 GitHub Project 相关的运营问题。该 skill 包含五个核心领域：
 
 - Star 跟踪：获取实时 Star 数量、总结增长情况并生成每日趋势图。
 - PR 跟踪：检查当前 PR 或开放 PR，只报告高信号的评审、检查、近期活动、新鲜度和下一步行动信息。
 - 路线图更新：更新维护者专用 GitHub Project 路线图中匹配的条目；只有用户明确要求创建时才添加条目。
 - 开发项目管理：开始、规划或完成 Yuxi 开发工作时，持续更新匹配的现有 GitHub Project 条目，记录任务、设计方案、状态、完成日期、测试结果和截图。
+- Feature 快速实现：根据用户需求或 GitHub Project 任务，从贡献指南、任务检索、功能分支、实现和真实 E2E 测试一路推进到 Draft PR，并执行仅限此流程的非 `xerrors` 提交身份门禁。
 
 除非用户要求使用其他语言，否则默认输出中文。将“current”“latest”“today”“now”“recent”“当前”“最新”“今天”和“动态”等词视为必须读取实时 GitHub 数据，而不是依赖记忆。
 
@@ -33,6 +34,105 @@ description: 管理 xerrors/Yuxi GitHub 项目的开发工作与报告。在 Yux
 - 如果请求的 GitHub Project 不存在，报告未找到。除非用户明确要求创建，否则绝不要新建 Project。
 - 如果 Project 存在但没有匹配条目，报告缺少该条目并跳过 Project 更新。除非用户明确要求创建或添加，否则绝不要创建草稿条目、Project 条目或仓库 issue。
 - 创建权限只适用于请求中明确指定的资源。例如，要求添加路线图条目只允许创建该条目，不允许新建 Project 或仓库 issue。
+
+## Feature 快速实现
+
+当用户说“feature 快速实现”“快速实现这个功能”“按 Project 里的任务开发”，或给出 Yuxi 功能需求 / GitHub 任务名称并要求开发时，使用本流程。本节的非 `xerrors` 身份限制只适用于 Feature 快速实现，不改变其他 Yuxi 管理流程。
+
+### 1. 按本地贡献说明确认任务
+
+开始前完整读取当前 Yuxi 工作树中的 `AGENTS.md`、`ARCHITECTURE.md`、`CONTRIBUTING.md`、`docs/develop-guides/contributing.md`、`docs/develop-guides/testing-guidelines.md` 和 `.github/PULL_REQUEST_TEMPLATE.md`。以工作树内的最新规则为准，不凭记忆复述远端旧版本。
+
+- 无论用户直接描述需求，还是只给出 GitHub Project 任务名称、Issue 编号或近似标题，都先查询维护者 Project，并检查相关 Issue、PR、验收标准、讨论和分配状态。
+- Project 任务必须确认已经分配给当前贡献者。没有匹配条目时报告未找到；除非用户明确要求，否则不要创建 Project 条目或 Issue。
+- 开发前写出最小验收标准和简短设计：目标、非目标、实现方式、影响范围、测试计划与风险。改动较大时，按 `AGENTS.md` 在 `docs/vibe` 创建包含日期、需求细节、验收标准、目标和 checklist 的文档。
+- 找到匹配 Project 条目后，将状态更新为进行中并记录设计；不要提前标记完成。
+
+### 2. 使用 Fork 和正确的任务分支
+
+先保护工作树中的现有改动，并检查远端关系：
+
+```bash
+git status --short --branch
+git remote -v
+```
+
+- `origin` 必须是当前贡献者自己的 Fork；`upstream` 必须是 `xerrors/Yuxi`。不要自动改写远端配置。
+- 禁止把开发分支直接推送到 `upstream`。
+- 按贡献说明同步官方 `main`：`git fetch upstream`、`git switch main`、`git merge --ff-only upstream/main`、`git push origin main`。如果工作树不干净、本地 `main` 有独立修改或同步不能快进，停止并保护现有工作，不要覆盖或删除。
+- 从同步后的 `main` 创建独立分支。新功能使用 `feat/<topic>`，不是 `feature/<topic>`；其他类型使用贡献说明规定的 `fix/`、`docs/`、`refactor/`、`test/` 或 `chore/`。
+
+```bash
+git switch -c feat/<task-slug>
+```
+
+### 3. 实现与测试
+
+- 只实现验收标准直接需要的内容，不混入无关重构、格式化或“顺手优化”。修改不熟悉的模块前先用 `ARCHITECTURE.md` 理解边界，再通过代码搜索定位实现。
+- 在 Docker Compose 环境中开发和调试。按改动范围执行“检查 → 测试 → Lint”，先跑相关最小测试集，再扩大回归范围。
+- Feature 快速实现必须完成一条真实 E2E 用户链路，验证最终业务结果和副作用；不得用 mock、组件测试或单纯的 HTTP `200` 代替。
+- 保存实际执行的命令、环境和结果。至少提供一份测试日志或结果截图；UI 修改必须提供最终界面和关键交互截图，适合对比时附修改前 / 修改后截图。
+- 截图、日志、测试、文档和回复不得泄露 `.env`、账号、密码、Token、仓库 Secrets 或用户数据。
+- E2E 未实际运行或失败时，明确记录阻塞，不得宣称完成，也不得进入提交和 PR 阶段。
+
+### 4. Human Review 门禁
+
+实现和测试完成后，先向用户展示以下审阅材料并停止，等待明确的 Human Review：
+
+- 完整变更范围和关键 diff。
+- 详细设计说明与必要取舍。
+- 测试命令、真实结果、E2E 场景以及日志或截图。
+- 未验证内容、风险、敏感信息检查和文档影响。
+
+本项目不允许 Agent 将未经 Human Review 的代码直接提交 PR。用户必须明确确认已经人工阅读全部改动、检查任务范围和安全风险，并认可测试结果。不要虚构 Review 次数或日志。没有这项确认时，不 commit、不 push、不创建 Draft PR。
+
+这不是对 Agent 创建 PR 的永久禁止。维护者或任务用户授权 Agent 交付 Draft PR 后，只要 Human Review 和身份门禁都已通过，Agent 可以亲自执行 commit、push 和 `gh pr create`，不必再要求人类代为操作，也不必重复请求一次“是否创建 PR”的确认。允许 Agent 创建 PR 不等于允许跳过 Human Review，也不等于允许使用 `xerrors` 身份。
+
+### 5. Feature 快速实现专用身份门禁
+
+Human Review 通过后，在 commit 前检查 commit 身份、GitHub 账号和 Fork：
+
+```bash
+gh api user --jq .login
+git config --get user.name
+git config --get user.email
+git var GIT_AUTHOR_IDENT
+git var GIT_COMMITTER_IDENT
+git remote get-url origin
+git remote get-url upstream
+```
+
+- 如果 GitHub 登录账号、commit author / committer 或 `origin` Fork 所有者是 `xerrors` / 张文杰，停止在 commit 之前，不提交、不推送、不创建 PR。
+- 只有用户在当前 Feature 快速实现任务中明确授权使用 `xerrors` / 张文杰身份，才允许越过身份限制；旧授权、仓库默认值或模糊的“继续”不算。
+- 不要擅自修改 Git 身份、切换账号、改写 remote 或伪造作者。请用户切换到允许的贡献者账号并配置其 Fork，然后重新检查。
+- 创建 PR 前再次检查 `gh` 登录账号和 PR head 仓库，确保来源是获准贡献者的 Fork。
+
+### 6. Commit、Push 和 Draft PR
+
+Human Review 与身份门禁都通过后：
+
+- 只暂存当前任务文件，使用中文 Conventional Commit，例如 `feat: 增加知识图谱导入流程`。
+- 将 `feat/<topic>` 推送到个人 Fork 的 `origin`，绝不推送到 `upstream`。
+- 从 `<contributor>/Yuxi:feat/<topic>` 向 `xerrors/Yuxi:main` 创建 Draft PR，必须使用 `--draft` 并验证 `isDraft=true`。
+- PR 标题直接表达目标，末尾添加 `🤖`。正文严格填写仓库 PR 模板，并包含详细设计、影响范围、实际测试命令与结果、真实 E2E、日志或截图、未验证内容和关联 Issue / Project。
+- AI 贡献说明必须如实填写工具名称、实际 Human Review 次数、人工检查内容和 Review 日志；不得写成“没有人工干预”。
+- Draft PR 创建后不要自动转为 ready for review，不要由 Agent 直接回复 Review，也不要合并 PR。
+
+```bash
+git add <task-files>
+git commit -m "feat: <中文功能摘要>"
+git push -u origin feat/<task-slug>
+gh pr create \
+  --repo xerrors/Yuxi \
+  --base main \
+  --head <contributor>:feat/<task-slug> \
+  --title "<功能目标> 🤖" \
+  --draft \
+  --body-file <completed-pr-template>
+gh pr view --repo xerrors/Yuxi --json url,state,isDraft,title,author,headRepositoryOwner,headRefName,baseRefName
+```
+
+创建 Draft PR 后，把链接、设计、测试结果和截图同步到匹配的 Project 条目，状态保持进行中。只有 PR 合并、必要测试通过且验收结果已记录后，才把任务标记完成。
 
 ## 开发项目管理
 
