@@ -22,6 +22,13 @@ agent-skills/
 │   │   ├── SKILL.md
 │   │   └── agents/
 │   │       └── openai.yaml
+│   ├── xerrors-review/
+│   │   ├── SKILL.md
+│   │   ├── agents/
+│   │   │   └── openai.yaml
+│   │   └── references/
+│   │       ├── review.md
+│   │       └── simplify.md
 │   └── yuxi-manage/
 │       └── SKILL.md
 ├── CONTRIBUTING.md
@@ -88,6 +95,9 @@ Restart Codex after installing or updating skills.
 - `xerrors-design`: Xerrors design preference router for UI/UX and frontend
   work; routes interface tasks to `ui-ux-pro-max-skill` or a taste-skill and
   records Xerrors' default taste and density preferences.
+- `xerrors-review`: combine Codex review contracts, Claude Code's parallel
+  finder/verifier orchestration, and Xerrors' minimal-code judgment for
+  high-confidence review or behavior-preserving simplification.
 - `yuxi-manage`: manage the `xerrors/Yuxi` GitHub project, including star
   growth reports, trend charts, current PR status, open PR overviews, review
   state, CI/check signals, and latest PR dynamics.
