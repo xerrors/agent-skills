@@ -55,6 +55,28 @@ python3 scripts/yuxi_stars_report.py
 - **代理**：`http://127.0.0.1:7890`
 - 无 GitHub Token，使用匿名请求（60 次/小时限制）
 
+### 脚本超时时的回退方案（实测常用）
+
+`scripts/yuxi_stars_report.py` 需要遍历全部 stargazer 分页，在 6000+ Star 的仓库上经常超时。已验证可用的回退流程：
+
+1. 用 `gh` 取当前总数：`gh api repos/xerrors/Yuxi --jq .stargazers_count`。
+2. 只抓最后 4–5 页拿到近期 Star 时间戳（`per_page=100`，页码 ≈ `ceil(总数/100)` 往前推 4 页；6385 Star 对应 page 61–65）：
+
+```bash
+for p in 61 62 63 64 65; do
+  gh api "repos/xerrors/Yuxi/stargazers?per_page=100&page=$p" \
+    -H "Accept: application/vnd.github.star+json" --jq '.[].starred_at'
+done > /tmp/yuxi_stars_raw.txt
+```
+
+3. 用 Python 把 UTC 时间戳转成北京时间后按自然日聚合，取近 14 个**完整**日（当天不计入），对比近 7 日与前 7 日的合计和日均。
+
+注意事项：
+
+- Accept 头只接受 `application/vnd.github.star+json` 或旧写法 `application/vnd.github.v3.star+json`；写成 `application/vnd.star+json` 会返回 415。
+- 随着总数增长，页码需要同步上移，否则会漏掉最新的 Star。抓完先检查末条时间戳是否接近当前时间。
+- 输出图表时用近 14 日双色对比（前 7 日浅灰、近 7 日主色），并注明「今日未完整不计入」。
+
 ## 定时任务
 
 如需接入 Hermes，可使用以下定时任务配置：
