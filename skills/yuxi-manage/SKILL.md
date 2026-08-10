@@ -11,6 +11,7 @@ description: 管理 xerrors/Yuxi GitHub 项目的开发工作与报告。在 Yux
 - PR 跟踪：检查当前 PR 或开放 PR，只报告高信号的评审、检查、近期活动、新鲜度和下一步行动信息。
 - 路线图更新：更新维护者专用 GitHub Project 路线图中匹配的条目；只有用户明确要求创建时才添加条目。
 - 开发项目管理：开始、规划或完成 Yuxi 开发工作时，持续更新匹配的现有 GitHub Project 条目，记录任务、设计方案、状态、完成日期、测试结果和截图。
+- 调研任务：新增 Project Item 或用户明确要求调研时，逐项完成深入调研，将报告、日期、单一组合标签（含 `已调研` 和 1–5 星可行性）回写到 GitHub。
 - Feature 快速实现：根据用户需求或 GitHub Project 任务，从贡献指南、任务检索、功能分支、实现和真实 E2E 测试一路推进到 Draft PR，并执行仅限此流程的非 `xerrors` 提交身份门禁。
 
 除非用户要求使用其他语言，否则默认输出中文。将“current”“latest”“today”“now”“recent”“当前”“最新”“今天”和“动态”等词视为必须读取实时 GitHub 数据，而不是依赖记忆。
@@ -18,6 +19,9 @@ description: 管理 xerrors/Yuxi GitHub 项目的开发工作与报告。在 Yux
 ## 默认值
 
 - 默认仓库：`xerrors/Yuxi`。
+- 默认贡献者 Fork：`Yuchuan925/Yuxi`（本地 `origin`）。
+- 默认 PR 创建目标仓库：`Yuchuan925/Yuxi`，目标分支为 `main`。用户只说“创建 PR”或“开 PR”而未明确指定目标仓库、目标 owner 或“主仓库”时，按此默认值执行。
+- 如果用户明确指定 `xerrors/Yuxi`、主仓库或其他目标仓库，严格使用用户指定的 PR 目标，不套用上述默认值。
 - 默认路线图 Project 所有者：`xerrors`。
 - 默认路线图 Project 编号：`2`。
 - 默认路线图 Project URL：`https://github.com/users/xerrors/projects/2`。
@@ -33,7 +37,66 @@ description: 管理 xerrors/Yuxi GitHub 项目的开发工作与报告。在 Yux
 - 检查 Project，或要求规划、开始、跟踪、更新、同步、完成、报告工作，只授权读取和更新相匹配的现有资源。
 - 如果请求的 GitHub Project 不存在，报告未找到。除非用户明确要求创建，否则绝不要新建 Project。
 - 如果 Project 存在但没有匹配条目，报告缺少该条目并跳过 Project 更新。除非用户明确要求创建或添加，否则绝不要创建草稿条目、Project 条目或仓库 issue。
+- 用户明确要求“新增/创建/添加任务”，或明确提出调研、可行性分析、方案评估时，如果没有匹配条目，必须自动创建一个 Project 草稿 Item 并执行“调研任务”流程；这项授权不包含自动创建仓库 Issue。
 - 创建权限只适用于请求中明确指定的资源。例如，要求添加路线图条目只允许创建该条目，不允许新建 Project 或仓库 issue。
+
+## 调研任务
+
+以下任一情况都触发调研任务流程：用户要求新增、创建或添加任务；用户明确要求调研、可行性分析或方案评估；或本流程即将新建任何 Project Item（包括明确授权新增的路线图条目）。每个任务都必须单独调研，不得用泛化结论代替逐项分析。
+
+### 1. 创建或匹配 Project Item
+
+- 先获取实时 Project、字段、条目，以及关联的 Issue、PR 和讨论，按标题、Issue/PR 编号和近似范围去重。
+- 没有匹配条目时，创建 Project 草稿 Item，初始标题使用原始任务标题，正文标记 `调研状态：进行中`；不要为了获得标签而自动创建仓库 Issue。
+- 有匹配条目时直接更新该条目，不创建重复项。普通“开始开发”且未明确新增或调研时，继续遵守“不匹配则跳过创建”的边界。
+
+```bash
+gh repo view xerrors/Yuxi --json defaultBranchRef,url
+gh project view 2 --owner xerrors --format json
+gh project field-list 2 --owner xerrors --format json
+gh project item-list 2 --owner xerrors --format json --limit 100
+gh project item-create 2 --owner xerrors --title "<原始任务标题>" --body "调研状态：进行中" --format json
+```
+
+### 2. 深入调研与报告内容
+
+- 至少检查 Yuxi 当前代码、架构和贡献说明、相关 Issue/PR/Project 讨论、近期提交与依赖约束；需要外部资料时优先使用官方或一手来源，并记录 URL、访问日期和适用版本。
+- 报告必须基于证据，明确区分事实、推断和待验证假设；不能只写“可行/不可行”或复述任务标题。
+- 报告至少包含：问题与目标、范围与非目标、现状证据、候选方案及取舍、实现路径与受影响区域、依赖/成本/工作量、风险与未知项、验证计划、结论和资料来源。
+- 给出 1–5 星可行性评级：`🌟` 表示当前约束下难以落地，`🌟🌟` 表示高风险，`🌟🌟🌟` 表示有条件可行，`🌟🌟🌟🌟` 表示可行且风险可控，`🌟🌟🌟🌟🌟` 表示证据充分、低风险且适合推进。报告中同时写明数值，例如 `可行性：🌟🌟🌟🌟（4/5）`。
+
+建议使用以下结构，并将完整内容写回 GitHub：
+
+```markdown
+## 调研报告
+- 调研日期：YYYY-MM-DD CST
+- 调研范围：...
+- 结论：可行 / 有条件可行 / 暂不可行
+- 可行性：🌟🌟🌟🌟（4/5）
+
+### 问题与目标
+### 现状与证据
+### 方案比较与推荐
+### 实现路径、成本与依赖
+### 风险、未知项与验证计划
+### 资料来源
+```
+
+### 3. 回写 GitHub、日期和标签
+
+- 调研完成后，把 `## 调研报告` 追加或合并到 Project Item 正文；保留原始需求、来源和已有有价值的记录，不要无提示覆盖用户内容。关联 Issue 或 PR 时，也将报告同步到其正文。
+- 只有完整报告和可行性评级写回成功后，才按北京时间将标题中已有的 `[MM-DD]` 日期前缀替换为当天日期，并设置为精确格式 `[MM-DD]标题`。调研未完成或资料不足时，不得伪造完成日期。
+- 标签按当前 GitHub 任务约束作为单一字段维护：先读取原有标签，在原标签上更新，不创建第二个标签。保留原有业务标签，并把调研状态和可行性追加到同一个值中，例如 `知识库 · 已调研 · 可行性🌟🌟🌟🌟`；多个标签一律使用带空格的 ` · ` 分隔。已有的 `已调研` 或旧可行性片段要原地替换，不能重复追加。
+
+```bash
+# 读取原标签后，在原标签字段上写回一个组合值；不要新增独立 label。
+# 例如：知识库  ->  知识库 · 已调研 · 可行性🌟🌟🌟
+gh project item-edit --id <item-id> --title "[MM-DD]<标题>" --body "<报告>\n\n标签：知识库 · 已调研 · 可行性🌟🌟🌟" --format json
+```
+
+- `gh project item-edit` 当前只能直接编辑 Draft Item 的标题和正文，不能假定 Draft Item 存在可写的 Issue labels 字段。对 Draft Item，必须在正文保留单一组合值 `标签：原标签 · 已调研 · 可行性🌟...`；如果实时 Project 暴露了可编辑的 Labels 字段，也只写入这一项组合值。不要仅为添加标签而创建 Issue。
+- 如果 GitHub 不接受包含 emoji 的标签值，只替换可行性片段为 `可行性-1` 到 `可行性-5`，例如 `知识库 · 已调研 · 可行性-3`，并在报告和 Item 正文中同时保留对应的 `🌟🌟🌟` 说明；仍然只维护一个组合标签。
+- 汇报时给出 Project Item URL、调研报告位置、最终标题、实际组合标签和可行性评级。若调研被阻塞，写明缺失证据和下一步，不添加 `已调研` 标签。
 
 ## Feature 快速实现
 
@@ -44,7 +107,7 @@ description: 管理 xerrors/Yuxi GitHub 项目的开发工作与报告。在 Yux
 开始前完整读取当前 Yuxi 工作树中的 `AGENTS.md`、`ARCHITECTURE.md`、`CONTRIBUTING.md`、`docs/develop-guides/contributing.md`、`docs/develop-guides/testing-guidelines.md` 和 `.github/PULL_REQUEST_TEMPLATE.md`。以工作树内的最新规则为准，不凭记忆复述远端旧版本。
 
 - 无论用户直接描述需求，还是只给出 GitHub Project 任务名称、Issue 编号或近似标题，都先查询维护者 Project，并检查相关 Issue、PR、验收标准、讨论和分配状态。
-- Project 任务必须确认已经分配给当前贡献者。没有匹配条目时报告未找到；除非用户明确要求，否则不要创建 Project 条目或 Issue。
+- Project 任务必须确认已经分配给当前贡献者。没有匹配条目时报告未找到；除非用户明确要求创建、请求新增任务，或命中“调研任务”自动创建规则，否则不要创建 Project 条目或 Issue。新建 Item 可以先完成调研，但实际开发仍需通过分配检查。
 - 开发前写出最小验收标准和简短设计：目标、非目标、实现方式、影响范围、测试计划与风险。改动较大时，按 `AGENTS.md` 在 `docs/vibe` 创建包含日期、需求细节、验收标准、目标和 checklist 的文档。
 - 找到匹配 Project 条目后，将状态更新为进行中并记录设计；不要提前标记完成。
 
@@ -57,9 +120,25 @@ git status --short --branch
 git remote -v
 ```
 
-- `origin` 必须是当前贡献者自己的 Fork；`upstream` 必须是 `xerrors/Yuxi`。不要自动改写远端配置。
+- 在默认的 Yuchuan925 工作区中，`origin` 必须指向 `Yuchuan925/Yuxi`，`upstream` 必须指向 `xerrors/Yuxi`。其他贡献者执行时，`origin` 可以是其本人 Fork，但不得自动改写远端配置。
 - 禁止把开发分支直接推送到 `upstream`。
-- 按贡献说明同步官方 `main`：`git fetch upstream`、`git switch main`、`git merge --ff-only upstream/main`、`git push origin main`。如果工作树不干净、本地 `main` 有独立修改或同步不能快进，停止并保护现有工作，不要覆盖或删除。
+- 拉取或使用最新 `main` 前，必须让 `Yuchuan925/Yuxi:main` 和 `xerrors/Yuxi:main` 保持同步。不要使用不带远端名的 `git pull`，以免只拉取 Fork：
+
+```bash
+git status --short --branch
+git remote get-url origin
+git remote get-url upstream
+git fetch --prune origin main
+git fetch --prune upstream main
+git switch main
+git merge --ff-only upstream/main
+git push origin main:main
+git fetch --prune origin main
+test "$(git rev-parse refs/remotes/origin/main)" = "$(git rev-parse refs/remotes/upstream/main)"
+test "$(git rev-parse HEAD)" = "$(git rev-parse refs/remotes/upstream/main)"
+```
+
+  `upstream/main` 是 `xerrors/Yuxi:main` 的最新状态，`origin/main` 是 `Yuchuan925/Yuxi:main` 的同步目标；最后两个校验必须通过。若工作树不干净、本地 `main` 有独立修改、远端分支发生分叉、快进合并/推送失败或哈希校验不一致，立即停止并保护现有工作，不要 reset、rebase、覆盖或强制推送。
 - 从同步后的 `main` 创建独立分支。新功能使用 `feat/<topic>`，不是 `feature/<topic>`；其他类型使用贡献说明规定的 `fix/`、`docs/`、`refactor/`、`test/` 或 `chore/`。
 
 ```bash
@@ -113,7 +192,7 @@ Human Review 与身份门禁都通过后：
 
 - 只暂存当前任务文件，使用中文 Conventional Commit，例如 `feat: 增加知识图谱导入流程`。
 - 将 `feat/<topic>` 推送到个人 Fork 的 `origin`，绝不推送到 `upstream`。
-- 从 `<contributor>/Yuxi:feat/<topic>` 向 `xerrors/Yuxi:main` 创建 Draft PR，必须使用 `--draft` 并验证 `isDraft=true`。
+- 默认从 `<contributor>/Yuxi:feat/<topic>` 向 `Yuchuan925/Yuxi:main` 创建 Draft PR，必须使用 `--draft` 并验证 `isDraft=true`。只有用户明确指定 `xerrors/Yuxi`、主仓库或其他目标仓库时，才把 PR base 改为该目标。
 - PR 标题直接表达目标，末尾添加 `🤖`。正文严格填写仓库 PR 模板，并包含详细设计、影响范围、实际测试命令与结果、真实 E2E、日志或截图、未验证内容和关联 Issue / Project。
 - AI 贡献说明必须如实填写工具名称、实际 Human Review 次数、人工检查内容和 Review 日志；不得写成“没有人工干预”。
 - Draft PR 创建后不要自动转为 ready for review，不要由 Agent 直接回复 Review，也不要合并 PR。
@@ -123,14 +202,16 @@ git add <task-files>
 git commit -m "feat: <中文功能摘要>"
 git push -u origin feat/<task-slug>
 gh pr create \
-  --repo xerrors/Yuxi \
+  --repo <pr-target-repo> \
   --base main \
   --head <contributor>:feat/<task-slug> \
   --title "<功能目标> 🤖" \
   --draft \
   --body-file <completed-pr-template>
-gh pr view --repo xerrors/Yuxi --json url,state,isDraft,title,author,headRepositoryOwner,headRefName,baseRefName
+gh pr view --repo <pr-target-repo> --json url,state,isDraft,title,author,headRepositoryOwner,headRefName,baseRefName
 ```
+
+其中 `<pr-target-repo>` 默认为 `Yuchuan925/Yuxi`；如果用户明确要求向主仓库或 `xerrors/Yuxi` 创建 PR，则替换为用户指定的目标仓库。
 
 创建 Draft PR 后，把链接、设计、测试结果和截图同步到匹配的 Project 条目，状态保持进行中。只有 PR 合并、必要测试通过且验收结果已记录后，才把任务标记完成。
 
@@ -150,8 +231,8 @@ gh project item-list 2 --owner xerrors --format json --limit 100
 开始任务时：
 
 - 首先搜索具有相同标题、关联 issue/PR 或近似相同范围的现有 Project 条目。更新现有条目，不要创建重复条目。
-- 如果不存在匹配条目，报告已跳过 Project 更新；如果可以，继续执行非 Project 工作。不要仅因为开发开始了就创建条目。
-- 只有用户明确要求创建或添加任务条目时，才创建 GitHub Project 草稿条目：
+- 如果不存在匹配条目，普通开发启动仍报告已跳过 Project 更新；如果请求属于“新增任务”或“调研任务”触发器，必须创建草稿 Item 并先完成调研，不得跳过。
+- 只有用户明确要求创建或添加任务条目，或命中“调研任务”自动创建规则时，才创建 GitHub Project 草稿条目：
 
 ```bash
 gh project item-create 2 --owner xerrors --title "<task title>" --body "<task body>" --format json
@@ -164,6 +245,7 @@ gh project item-create 2 --owner xerrors --title "<task title>" --body "<task bo
 更新进行中的任务时：
 
 - 将 Project 条目作为运营事实来源。把有意义的变化更新到正文中，不要只在聊天中零散记录计划/状态。
+- 新建的路线图条目也属于新建 Project Item，必须在调研完成后回写报告、`[MM-DD]` 标题和包含 `已调研` 与可行性评级的单一组合标签。
 - PR 创建后添加其链接。只有当分支或 PR 链接有助于继续工作时才包含它们。
 - 如果任务范围发生变化，更新设计方案并注明原因。
 

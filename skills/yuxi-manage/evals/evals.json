@@ -22,7 +22,7 @@
     {
       "id": 4,
       "prompt": "更新一下 Yuxi roadmap，把我列的事项加进去，同时从带 roadmap 标签的 issue 里补充遗漏项。",
-      "expected_output": "A roadmap update workflow for xerrors/Yuxi that treats roadmap as the maintainer-only GitHub Project by default, checks existing project items and live roadmap-labeled issues, creates missing draft project items only because this prompt explicitly asks to add them, avoids duplicates, keeps issue source links in item bodies, and summarizes added, updated, skipped, and source issues.",
+      "expected_output": "A roadmap update workflow for xerrors/Yuxi that treats roadmap as the maintainer-only GitHub Project by default, checks existing project items and live roadmap-labeled issues, creates missing draft project items only because this prompt explicitly asks to add them, researches every newly created item, writes each research report back to GitHub, prefixes the completed title with the Beijing-date [MM-DD], updates the original single tag in place with a combined value such as 原标签 · 已调研 · 可行性🌟🌟🌟 (or the equivalent draft-item body metadata), avoids duplicate tag values, keeps issue source links in item bodies, and summarizes added, updated, skipped, and source issues.",
       "files": []
     },
     {
@@ -34,7 +34,7 @@
     {
       "id": 6,
       "prompt": "我在 Yuxi 项目里要开发一个新的知识库导入任务，先帮我建任务并记录设计计划；做完后把状态、完成日期、测试结果和截图都补到项目里。",
-      "expected_output": "The skill should trigger because development is happening inside the Yuxi project, create or update a matching GitHub Project item before implementation, write the design plan into the item body, and on completion update status, Beijing completion date, test results, and screenshot links or paths without creating duplicates.",
+      "expected_output": "The skill should trigger because development is happening inside the Yuxi project, create or update a matching GitHub Project item before implementation, conduct and write a detailed research report with evidence, options, risks, validation plan, conclusion, and 1–5 star feasibility, then prefix the researched title with [MM-DD], update the original single tag in place using ·-separated values such as 原标签 · 已调研 · 可行性🌟🌟🌟🌟 (or draft-item body metadata), write the design plan into the item body, and on completion update status, Beijing completion date, test results, and screenshot links or paths without creating duplicates.",
       "files": []
     },
     {
@@ -46,13 +46,37 @@
     {
       "id": 8,
       "prompt": "用 feature 快速实现流程做 GitHub Project 里的‘支持知识库文件树视图’，开发、测试后给主仓库开 PR。",
-      "expected_output": "The skill should use the current local Yuxi contribution rules, verify the assigned GitHub Project task, require origin to be the contributor fork and upstream to be xerrors/Yuxi, sync upstream/main, create feat/<slug>, implement a focused change, run Docker-based checks and a real E2E with evidence, then stop for explicit Human Review before any commit or PR. After Human Review it should enforce the non-xerrors identity and fork gate, commit with a Chinese Conventional Commit, push only to origin, and create a Draft PR from the contributor fork to xerrors/Yuxi:main. The PR must use the repository template, end its title with the robot marker, and truthfully record design, tests, screenshots, Human Review count, and review log.",
+      "expected_output": "The skill should use the current local Yuxi contribution rules, verify the assigned GitHub Project task, require origin to be the contributor fork and upstream to be xerrors/Yuxi, fetch both main refs, fast-forward local main from upstream/main, push origin/main, and verify the Yuchuan925/Yuxi:main and xerrors/Yuxi:main hashes match before creating feat/<slug>. It should implement a focused change, run Docker-based checks and a real E2E with evidence, then stop for explicit Human Review before any commit or PR. Because this prompt explicitly asks for the main repository, after Human Review it should enforce the non-xerrors identity and fork gate, commit with a Chinese Conventional Commit, push only to origin, and create a Draft PR from the contributor fork to xerrors/Yuxi:main. The PR must use the repository template, end its title with the robot marker, and truthfully record design, tests, screenshots, Human Review count, and review log.",
       "files": []
     },
     {
       "id": 9,
       "prompt": "快速实现这个 Yuxi feature。现在 gh 登录的是 xerrors，代码写完就直接 commit 并开 PR。",
       "expected_output": "After explicit Human Review, the Feature quick implementation workflow must still stop before commit because the active GitHub identity is xerrors. It must not commit, push, create a PR, change Git identity, switch accounts, rewrite remotes, or fabricate another author unless the user explicitly authorizes using xerrors for this specific task. It should report the detected identity and require an allowed contributor account and fork.",
+      "files": []
+    },
+    {
+      "id": 10,
+      "prompt": "拉取 Yuxi 的 main 分支，确保 Yuchuan925/Yuxi:main 和 xerrors/Yuxi:main 保持同步。",
+      "expected_output": "The skill should verify that origin points to Yuchuan925/Yuxi and upstream points to xerrors/Yuxi, fetch both main refs, fast-forward local main only from upstream/main, push the result to origin/main, refetch origin/main, and compare both remote commit hashes plus local HEAD. It must not use a bare git pull, force push, reset, or rebase; if the worktree is dirty, branches diverge, or any sync or verification step fails, it should stop and protect existing work.",
+      "files": []
+    },
+    {
+      "id": 11,
+      "prompt": "这个功能帮我开一个 PR。",
+      "expected_output": "Because the user did not specify a target repository, the skill should default PR creation to Yuchuan925/Yuxi:main. If the user instead explicitly names xerrors/Yuxi, the main repository, or another target, it should use that explicit target.",
+      "files": []
+    },
+    {
+      "id": 12,
+      "prompt": "新增一个 Yuxi 任务：支持知识库文件树视图。",
+      "expected_output": "The skill should search for a matching Project item, create a draft item if none exists, perform a careful task-specific investigation using current repository and GitHub evidence, write a structured research report back to GitHub, assess feasibility from 1 to 5 stars, then update the title to [MM-DD]标题 and update the original single tag in place with ·-separated values such as 原标签 · 已调研 · 可行性🌟🌟🌟 (or equivalent draft-item body metadata). It must not create a second label or a repository issue solely to attach labels.",
+      "files": []
+    },
+    {
+      "id": 13,
+      "prompt": "调研一下 Yuxi 是否适合增加知识库文件树视图，并把结果记录到 Project。",
+      "expected_output": "The skill should treat this as a research-task trigger, reuse a matching Project item or automatically create a draft Project item if absent, investigate code, docs, related issues/PRs and relevant primary sources, publish a detailed evidence-based report with alternatives, risks, validation plan, conclusion and 1–5 star feasibility, then apply the Beijing [MM-DD] title prefix and update the original single tag in place with ·-separated 已调研/feasibility metadata. If evidence is insufficient, it should report the blocker and not claim the item is researched.",
       "files": []
     }
   ]
