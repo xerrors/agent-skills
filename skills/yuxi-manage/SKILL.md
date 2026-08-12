@@ -154,22 +154,22 @@ git switch -c feat/<task-slug>
 - 截图、日志、测试、文档和回复不得泄露 `.env`、账号、密码、Token、仓库 Secrets 或用户数据。
 - E2E 未实际运行或失败时，明确记录阻塞，不得宣称完成，也不得进入提交和 PR 阶段。
 
-### 4. Human Review 门禁
+### 4. PR 标题与正文确认门禁
 
-实现和测试完成后，先向用户展示以下审阅材料并停止，等待明确的 Human Review：
+Agent 可以在任务范围和用户授权内完成 commit、push 和创建 PR，不因使用 Agent 而强制要求先完成 Human Review。实现和测试完成后，向用户展示以下审阅材料，再准备创建 PR：
 
 - 完整变更范围和关键 diff。
 - 详细设计说明与必要取舍。
 - 测试命令、真实结果、E2E 场景以及日志或截图。
 - 未验证内容、风险、敏感信息检查和文档影响。
 
-本项目不允许 Agent 将未经 Human Review 的代码直接提交 PR。用户必须明确确认已经人工阅读全部改动、检查任务范围和安全风险，并认可测试结果。不要虚构 Review 次数或日志。没有这项确认时，不 commit、不 push、不创建 Draft PR。
+即使用户要求“直接提交 PR”或已授权交付，Agent 在调用 PR 创建命令前仍必须先展示拟提交的 PR 标题和完整正文，等待用户明确确认。用户确认的是标题和正文，不替代测试、敏感信息检查、Fork/远程目标检查和 CI 结果记录；这些仍是 Agent 提交前的必做检查。没有明确确认时，不 commit、不 push、不创建 PR；不要虚构 Review 次数或日志。
 
-这不是对 Agent 创建 PR 的永久禁止。维护者或任务用户授权 Agent 交付 Draft PR 后，只要 Human Review 和身份门禁都已通过，Agent 可以亲自执行 commit、push 和 `gh pr create`，不必再要求人类代为操作，也不必重复请求一次“是否创建 PR”的确认。允许 Agent 创建 PR 不等于允许跳过 Human Review，也不等于允许使用 `xerrors` 身份。
+“继续”“可以”之外的上下文不能被默认为确认，需能明确对应当前标题和正文。允许 Agent 创建 PR 不等于允许跳过上述确认门禁，也不等于允许使用 `xerrors` 身份。
 
 ### 5. Feature 快速实现专用身份门禁
 
-Human Review 通过后，在 commit 前检查 commit 身份、GitHub 账号和 Fork：
+实现和测试完成、PR 标题与正文确认门禁通过后，在 commit 前检查 commit 身份、GitHub 账号和 Fork：
 
 ```bash
 gh api user --jq .login
@@ -188,13 +188,13 @@ git remote get-url upstream
 
 ### 6. Commit、Push 和 Draft PR
 
-Human Review 与身份门禁都通过后：
+身份门禁与 PR 标题/正文确认门禁都通过后：
 
 - 只暂存当前任务文件，使用中文 Conventional Commit，例如 `feat: 增加知识图谱导入流程`。
 - 将 `feat/<topic>` 推送到个人 Fork 的 `origin`，绝不推送到 `upstream`。
 - 默认从 `<contributor>/Yuxi:feat/<topic>` 向 `Yuchuan925/Yuxi:main` 创建 Draft PR，必须使用 `--draft` 并验证 `isDraft=true`。只有用户明确指定 `xerrors/Yuxi`、主仓库或其他目标仓库时，才把 PR base 改为该目标。
-- PR 标题直接表达目标，末尾添加 `🤖`。正文严格填写仓库 PR 模板，并包含详细设计、影响范围、实际测试命令与结果、真实 E2E、日志或截图、未验证内容和关联 Issue / Project。
-- AI 贡献说明必须如实填写工具名称、实际 Human Review 次数、人工检查内容和 Review 日志；不得写成“没有人工干预”。
+- PR 标题直接表达目标，不加 `🤖`。正文严格填写仓库 PR 模板，并包含详细设计、影响范围、实际测试命令与结果、真实 E2E、日志或截图、未验证内容和关联 Issue / Project；不写 AI/Agent 贡献说明或人工 Review 次数。
+- 创建命令执行前先向用户展示拟提交的 PR 标题和完整正文，等待明确确认。
 - Draft PR 创建后不要自动转为 ready for review，不要由 Agent 直接回复 Review，也不要合并 PR。
 
 ```bash
@@ -205,7 +205,7 @@ gh pr create \
   --repo <pr-target-repo> \
   --base main \
   --head <contributor>:feat/<task-slug> \
-  --title "<功能目标> 🤖" \
+  --title "<功能目标>" \
   --draft \
   --body-file <completed-pr-template>
 gh pr view --repo <pr-target-repo> --json url,state,isDraft,title,author,headRepositoryOwner,headRefName,baseRefName
@@ -213,7 +213,7 @@ gh pr view --repo <pr-target-repo> --json url,state,isDraft,title,author,headRep
 
 其中 `<pr-target-repo>` 默认为 `Yuchuan925/Yuxi`；如果用户明确要求向主仓库或 `xerrors/Yuxi` 创建 PR，则替换为用户指定的目标仓库。
 
-创建 Draft PR 后，把链接、设计、测试结果和截图同步到匹配的 Project 条目，状态保持进行中。只有 PR 合并、必要测试通过且验收结果已记录后，才把任务标记完成。
+创建 Draft PR 后，把链接、设计、测试结果和截图同步到匹配的 Project 条目。若任务开始时位于 `Todo`，严格执行下文“Todo 模型任务进入 PR 审查”规则：状态改为 `In Progress`，标签改为 `待审查`，不得标记完成。只有 PR 合并、必要测试通过且验收结果已记录后，才把任务标记完成。
 
 ## 开发项目管理
 
@@ -249,10 +249,33 @@ gh project item-create 2 --owner xerrors --title "<task title>" --body "<task bo
 - PR 创建后添加其链接。只有当分支或 PR 链接有助于继续工作时才包含它们。
 - 如果任务范围发生变化，更新设计方案并注明原因。
 
+### Todo 模型任务进入 PR 审查
+
+当 Agent / 模型接手任务时，必须记住从实时 Project 读取到的初始 Status。若初始 Status 是 `Todo`，则该任务在创建或发现对应 PR 后进入审查阶段，以下规则优先于通用“完成任务”规则：
+
+- 即使代码、测试、commit、push 和 PR 都已完成，也不得把 Project Status 直接改为 `Done`。把 Status 从 `Todo` 更新为 `In Progress`；如果已经是 `In Progress`，保持不变。
+- 将 Project 的 `Tags` 单选字段更新为精确值 `待审查`，表示等待维护者审查。先通过 `gh project field-list` 解析实时字段 ID 和选项 ID，不按记忆硬编码。
+- 如果实时 `Tags` 字段中没有 `待审查` 选项，不得擅自创建 Project 字段选项、改用 `已完成` 或其他近似标签，也不得因此标记 `Done`。保持 `In Progress`，在条目正文写明 `审查状态：待审查`，并向用户报告需要维护者在 Project 中配置 `待审查` 选项。
+- 在条目正文新增或更新单一的 `## PR 与审查` 章节，至少包含 `PR：<完整 URL>` 和 `审查状态：待审查`；保留已有需求、设计、测试、截图和调研记录，不重复追加同一 PR 链接。
+- PR 为 Draft、Open、已请求 Review 或 CI 已通过都仍属于审查阶段。只有 PR 已合并，并且必要测试与验收结果已记录，才允许进入下面的完成流程；PR 关闭但未合并时不得标记完成，应记录原因和下一步。
+
+常用更新模式：
+
+```bash
+# Status: Todo -> In Progress
+gh project item-edit --id <item-id> --project-id <project-id> \
+  --field-id <status-field-id> --single-select-option-id <in-progress-option-id>
+
+# Tags: -> 待审查（仅当实时字段中存在该选项）
+gh project item-edit --id <item-id> --project-id <project-id> \
+  --field-id <tags-field-id> --single-select-option-id <待审查-option-id>
+```
+
 完成任务时：
 
 - 如果找不到匹配的现有条目，报告完成元数据未写入 Project。不要事后补建条目。
-- 如果 Project 有匹配的 Status 选项，将 Project 条目标记为 done/completed。通过 `gh project field-list` 解析字段 ID 和选项 ID，然后使用 `gh project item-edit`。
+- 先检查是否命中“Todo 模型任务进入 PR 审查”规则。若对应 PR 尚未合并，停止完成转换，保持 `In Progress` 和 `待审查`，确保正文含 PR 链接。
+- 不受上述审查门禁阻止、且完成条件全部满足时，如果 Project 有匹配的 Status 选项，将 Project 条目标记为 done/completed。通过 `gh project field-list` 解析字段 ID 和选项 ID，然后使用 `gh project item-edit`。
 - 在 Project 条目正文中添加或更新完成章节，其中包括：按北京时间填写的 `完成日期：YYYY-MM-DD`、`测试结果：...`，以及简洁的实现摘要。
 - 如果存在截图，在条目正文中附加或链接截图。优先使用持久的 GitHub issue/PR/comment/asset URL；如果只有本地截图，注明本地路径，并在上传到其他位置前询问用户。
 - 测试缺失或失败时，不要将任务标记为完成。应改为在状态和正文中记录阻塞原因、缺少的验证以及下一步行动。
