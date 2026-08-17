@@ -10,10 +10,6 @@ Skills live under `skills/<skill-name>/` and each skill must include a
 ```text
 agent-skills/
 ├── skills/
-│   ├── process-arxiv-paper/
-│   │   ├── SKILL.md
-│   │   └── agents/
-│   │       └── openai.yaml
 │   ├── product-launch-card-kit/
 │   │   └── SKILL.md
 │   ├── skill-manager/
@@ -82,9 +78,6 @@ Restart Codex after installing or updating skills.
 
 ## Current Skills
 
-- `process-arxiv-paper`: find, download, translate, and analyze arXiv papers,
-  including paper assets, source-code discovery, Chinese Markdown translation,
-  and UV/demo notes.
 - `product-launch-card-kit`: create a publish-ready social launch workbench
   for apps, open-source projects, agent skills, plugins, and developer tools,
   including screenshot-ready cards, PNG export/download, titles, body copy, and

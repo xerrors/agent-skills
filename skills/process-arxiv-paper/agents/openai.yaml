@@ -1,4 +1,0 @@
-interface:
-  display_name: "Process arXiv Paper"
-  short_description: "Download, translate, and study arXiv papers"
-  default_prompt: "Use $process-arxiv-paper [paper-title-or-arxiv-url] to download, translate, and analyze this arXiv paper."
