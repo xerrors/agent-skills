@@ -1,49 +1,53 @@
 ---
 name: yuxi-manage
-description: 管理 xerrors/Yuxi GitHub 仓库的开发工作与报告。在 Yuxi 项目内工作、快速实现 feature、开始或完成 Yuxi 开发任务、通过 xhome 管理 Yuxi 项目与任务，或询问 Yuxi Star、PR、CI、评审、路线图或仓库近期活动时使用此 skill。
+description: 管理 xerrors/Yuxi 的 xhome 项目、路线图、GitHub PR 创建与交付门禁，并报告 PR、CI、Star 和仓库动态。用户要求管理 Yuxi 项目或任务、维护路线图、创建/提交 PR、检查 PR 门禁或查询仓库状态时使用；不负责需求 spec、开发规划、功能实现、测试设计或代码审阅。
 ---
 
 # Yuxi 管理
 
-使用此 skill 回答与 `xerrors/Yuxi` GitHub 仓库及其 xhome 任务项目相关的运营问题。该 skill 包含五个核心领域：
+此 skill 是 `xerrors/Yuxi` 的项目与仓库交付管理层，只负责：
 
-- Star 跟踪：获取实时 Star 数量、总结增长情况并生成每日趋势图。
-- PR 跟踪：检查当前 PR 或开放 PR，只报告高信号的评审、检查、近期活动、新鲜度和下一步行动信息。
-- 路线图更新：将路线图任务同步到 xhome 项目中的匹配任务；只有用户明确要求创建时才添加任务。
-- 开发任务管理：开始、规划或完成 Yuxi 开发工作时，持续更新匹配的 xhome 任务，记录任务、设计方案、状态、完成日期、测试结果和截图。
-- 调研任务：新增 xhome 任务或用户明确要求调研时，逐项完成深入调研，将报告、日期和五级可行性字段回写到 xhome 任务；不添加“已调研”标签。
-- Feature 快速实现：根据用户需求或 xhome 任务，从贡献指南、任务检索、功能分支、实现和真实 E2E 测试一路推进到 Draft PR，并执行仅限此流程的非 `xerrors` 提交身份门禁。
+- xhome 项目和任务的查询、创建、字段更新、状态流转与来源关联。
+- 路线图条目的维护，以及 xhome 与明确指定的 `roadmap.md` 之间的同步。
+- 将已经准备好的代码变更交付为 PR，并执行提交、身份、远端、目标仓库、模板、测试证据和 CI 门禁。
+- PR、CI、Star、Issue 和仓库近期活动的实时报告。
 
-除非用户要求使用其他语言，否则默认输出中文。将“current”“latest”“today”“now”“recent”“当前”“最新”“今天”和“动态”等词视为必须读取实时 GitHub 数据，而不是依赖记忆。
+## 明确边界
+
+此 skill 不承担开发过程管理，不执行或设计以下工作：
+
+- 编写需求 spec、技术方案、开发计划、验收标准或 `docs/vibe` 文档。
+- 实现功能、修复 bug、重构代码、选择架构或拆分开发步骤。
+- 设计测试、安排 E2E、要求截图，或替开发者决定应运行哪些测试。
+- 审阅代码、生成 review findings、回复 PR review、approve、request changes 或合并 PR。
+- 自动调用、要求调用或依赖 `xerrors-review`；只有用户在当前请求中另行明确调用该 skill 时，才把它视为独立工作流。
+- 因为用户正在开发 Yuxi，就自动创建任务、写 spec、记录设计或持续同步开发过程。
+
+如果一个请求同时包含开发和管理动作，只执行明确的项目管理或 PR 交付部分；开发部分交给当前项目适用的开发流程。创建 PR 时可以提交和推送已准备好的变更，但不得借机修改代码。
+
+除非用户要求其他语言，否则默认输出中文。将“current”“latest”“today”“now”“recent”“当前”“最新”“今天”和“动态”等词视为必须读取实时数据。
 
 ## 默认值
 
-- 默认仓库：`xerrors/Yuxi`。
-- 默认贡献者 Fork：`Yuchuan925/Yuxi`（本地 `origin`）。
-- 默认 PR 创建目标仓库：`Yuchuan925/Yuxi`，目标分支为 `main`。用户只说“创建 PR”或“开 PR”而未明确指定目标仓库、目标 owner 或“主仓库”时，按此默认值执行。
-- 如果用户明确指定 `xerrors/Yuxi`、主仓库或其他目标仓库，严格使用用户指定的 PR 目标，不套用上述默认值。
+- 主仓库：`xerrors/Yuxi`。
+- 默认贡献者 Fork / PR 目标：`Yuchuan925/Yuxi`，base 为 `main`。
+- 用户只说“创建 PR”或“开 PR”且未指定目标时，向 `Yuchuan925/Yuxi:main` 创建 Draft PR。
+- 用户明确指定主仓库、`xerrors/Yuxi` 或其他仓库时，严格使用指定目标。
 - 默认 xhome endpoint：`http://121.41.110.195`。
-- 默认 xhome 项目名称：`Yuxi`；每次操作前通过 `xhome projects list` 解析实际项目 ID，不要凭记忆硬编码。
-- 默认路线图文档路径：`docs/develop-guides/roadmap.md`。
+- 默认 xhome 项目：`Yuxi`；每次通过 `xhome projects list` 解析实际项目 ID，不硬编码。
+- 默认公开路线图：`docs/develop-guides/roadmap.md`。
 - 默认时区：北京时间 / CST / UTC+8。
-- PR 工作优先使用已认证的 `gh` 命令，因为它包含私有身份验证状态、当前分支上下文、评审数据和检查数据。
-- 当 `gh` 不可用或使用 Star 脚本时，GitHub API 调用使用 `curl` 配合 `http://127.0.0.1:7890` 作为代理回退方案。
-- 如果用户提供了其他仓库、PR URL 或 PR 编号，遵循用户明确给出的目标，而不是默认值。
+- GitHub 操作优先使用已认证的 `gh`；Star 脚本或 `gh` 不可用时，可用 `curl` 和 `http://127.0.0.1:7890` 代理回退。
 
-## xhome CLI 前置条件
+## xhome 项目管理
 
-- Yuxi 的项目和任务统一通过 xhome 管理。首次使用前安装 CLI：
+首次使用前若缺少 CLI，可安装：
 
 ```bash
 npm install -g @xerrors/home
 ```
 
-- 安装后按“xhome 任务创建边界”配置 endpoint、检查登录状态并解析 Yuxi 项目 ID。
-
-## xhome 任务创建边界
-
-- 所有 Yuxi 任务的创建、查询、状态更新和正文回写都必须使用 xhome CLI；不要使用其他任务系统替代。
-- 开始前确认 endpoint、登录状态和目标 xhome 项目：
+每次写入前确认 endpoint、身份和目标项目：
 
 ```bash
 xhome config set endpoint http://121.41.110.195
@@ -52,14 +56,18 @@ xhome projects list
 xhome projects tasks list <xhome-project-id>
 ```
 
-- 默认目标项目名称为 `Yuxi`。如果找不到该项目，报告未找到并暂停任务写入；不要自动创建新的 xhome 项目。
-- 普通规划、开始、跟踪、更新、完成或报告请求只允许读取和更新匹配的现有 xhome 任务。没有匹配任务时，报告缺少任务并跳过写入。
-- 用户明确要求“新增/创建/添加任务”，或明确提出调研、可行性分析、方案评估时，如果没有匹配任务，必须通过 xhome 创建任务；除非用户明确要求，否则不要自动创建 GitHub Issue。
-- 通过标题、GitHub Issue/PR 编号、来源 URL 和近似范围去重。创建前先列出现有任务，避免重复。
-- xhome 状态使用 `todo`、`doing`、`review`、`done`；分别表示待开始、进行中、等待 PR/维护者审查、已完成。优先级默认 `medium`，可行性默认 `medium`。
-- 可行性是任务数据库字段，使用五个值：`low`（低）、`lower`（较低）、`medium`（中）、`higher`（较高）、`high`（高）。
+管理规则：
 
-创建任务的标准命令：
+- 所有 Yuxi 项目任务统一通过 xhome 管理，不用其他任务系统代替。
+- 找不到 `Yuxi` 项目时停止写入，不自动创建项目。
+- 创建前按标题、Issue/PR 编号、来源 URL 和近似范围去重。
+- 只有用户明确要求“新增/创建/添加任务”时才创建任务；查询、同步、更新或报告请求不隐含创建授权。
+- 不因创建任务而自动调研、写 spec、评估技术可行性或创建 GitHub Issue。
+- 用户提供的目标、优先级、状态、标签、来源和说明按原意写入；缺省优先级和可行性可用 `medium`，但不要伪造依据。
+- xhome 状态只使用 `todo`、`doing`、`review`、`done`。`review` 表示已进入 PR/维护者处理阶段，不表示本 skill 执行代码审阅。
+- 更新正文时保留原内容，只合并明确要求变更的字段和来源链接。
+
+创建任务：
 
 ```bash
 xhome projects tasks add <xhome-project-id> \
@@ -67,322 +75,29 @@ xhome projects tasks add <xhome-project-id> \
   --status todo \
   --priority medium \
   --feasibility medium \
-  --tags "<标签1>,<标签2>" \
+  --tags "<标签>" \
   --content-file <task-content.md>
 ```
 
-更新任务使用 `xhome projects tasks update <task-id>`、
-`xhome projects tasks content <task-id>` 和
-`xhome projects tasks status <task-id> <status>`。大段设计、调研、测试或来源信息必须写入任务 Markdown 正文。
-
-## 调研任务
-
-以下任一情况都触发调研任务流程：用户要求新增、创建或添加任务；用户明确要求调研、可行性分析或方案评估；或本流程即将新建任何 xhome 任务。每个任务都必须单独调研，不得用泛化结论代替逐项分析。
-
-### 1. 创建或匹配 xhome 任务
-
-- 先通过 xhome 列出目标项目和任务，并读取关联的 Issue、PR 和讨论，按标题、Issue/PR 编号和近似范围去重。
-- 没有匹配任务时，通过 `xhome projects tasks add` 创建任务，初始状态设为 `doing`、可行性设为 `medium`，正文标记 `调研状态：进行中`；不要为了获得标签而自动创建仓库 Issue。
-- 有匹配条目时直接更新该条目，不创建重复项。普通“开始开发”且未明确新增或调研时，继续遵守“不匹配则跳过创建”的边界。
+更新任务：
 
 ```bash
-gh repo view xerrors/Yuxi --json defaultBranchRef,url
-xhome projects list
-xhome projects tasks list <xhome-project-id>
-xhome projects tasks add <xhome-project-id> -t "<原始任务标题>" --status doing --priority medium --feasibility medium --content "调研状态：进行中"
-```
-
-### 2. 深入调研与报告内容
-
-- 至少检查 Yuxi 当前代码、架构和贡献说明、相关 Issue/PR 讨论、近期提交与依赖约束；需要外部资料时优先使用官方或一手来源，并记录 URL、访问日期和适用版本。
-- 报告必须基于证据，明确区分事实、推断和待验证假设；不能只写“可行/不可行”或复述任务标题。
-- 报告至少包含：问题与目标、范围与非目标、现状证据、候选方案及取舍、实现路径与受影响区域、依赖/成本/工作量、风险与未知项、验证计划、结论和资料来源。
-- 给出五级可行性评级：`低`、`较低`、`中`、`较高`、`高`，并在报告中说明证据与理由。使用 xhome 字段值 `low`、`lower`、`medium`、`higher`、`high` 回写；报告可写 `可行性：较高（4/5）`。
-
-建议使用以下结构，并将完整内容写回 xhome 任务：
-
-```markdown
-## 调研报告
-- 调研日期：YYYY-MM-DD CST
-- 调研范围：...
-- 结论：可行 / 有条件可行 / 暂不可行
-- 可行性：较高（4/5）
-
-### 问题与目标
-### 现状与证据
-### 方案比较与推荐
-### 实现路径、成本与依赖
-### 风险、未知项与验证计划
-### 资料来源
-```
-
-### 3. 回写 xhome、日期和标签
-
-- 调研完成后，把 `## 调研报告` 追加或合并到 xhome 任务正文；保留原始需求、来源和已有有价值的记录，不要无提示覆盖用户内容。关联 Issue 或 PR 时，也将报告同步到其正文。
-- 只有完整报告和可行性评级写回成功后，才按北京时间将标题中已有的 `[MM-DD]` 日期前缀替换为当天日期，并设置为精确格式 `[MM-DD]标题`。调研未完成或资料不足时，不得伪造完成日期。
-- 调研完成后通过 xhome 的 `--feasibility low|lower|medium|higher|high` 写回数据库字段；不要添加“已调研”标签。若旧任务已有“已调研”标签，在本次更新时一并移除；保留其他业务标签。
-
-```bash
-# 保留其他业务标签，并通过 xhome 写回标题、可行性字段和完整报告正文。
-xhome projects tasks update <task-id> \
-  --title "[MM-DD]<标题>" \
-  --feasibility higher \
-  --tags "知识库" \
-  --content-file <updated-content.md>
-```
-
-- 汇报时给出 xhome 任务 ID、调研报告位置、最终标题、实际标签、数据库可行性字段和评级。若调研被阻塞，写明缺失证据和下一步，不更新可行性字段或添加“已调研”标签。
-
-## Feature 快速实现
-
-当用户说“feature 快速实现”“快速实现这个功能”“按 xhome 里的任务开发”，或给出 Yuxi 功能需求 / GitHub 任务名称并要求开发时，使用本流程。本节的非 `xerrors` 身份限制只适用于 Feature 快速实现，不改变其他 Yuxi 管理流程。
-
-### 1. 按本地贡献说明确认任务
-
-开始前完整读取当前 Yuxi 工作树中的 `AGENTS.md`、`ARCHITECTURE.md`、`CONTRIBUTING.md`、`docs/develop-guides/contributing.md`、`docs/develop-guides/testing-guidelines.md` 和 `.github/PULL_REQUEST_TEMPLATE.md`。以工作树内的最新规则为准，不凭记忆复述远端旧版本。
-
-- 无论用户直接描述需求，还是只给出 xhome 任务名称、Issue 编号或近似标题，都先通过 xhome 查询目标项目和匹配任务，并检查相关 Issue、PR、验收标准、讨论和当前状态。
-- 没有匹配任务时报告未找到；除非用户明确要求创建、请求新增任务，或命中“调研任务”自动创建规则，否则不要创建 xhome 任务或 Issue。新建任务可以先完成调研。
-- 开发前写出最小验收标准和简短设计：目标、非目标、实现方式、影响范围、测试计划与风险。改动较大时，按 `AGENTS.md` 在 `docs/vibe` 创建包含日期、需求细节、验收标准、目标和 checklist 的文档。
-- 找到匹配 xhome 任务后，将状态更新为 `doing` 并记录设计；不要提前标记完成。
-
-### 2. 使用 Fork 和正确的任务分支
-
-先保护工作树中的现有改动，并检查远端关系：
-
-```bash
-git status --short --branch
-git remote -v
-```
-
-- 在默认的 Yuchuan925 工作区中，`origin` 必须指向 `Yuchuan925/Yuxi`，`upstream` 必须指向 `xerrors/Yuxi`。其他贡献者执行时，`origin` 可以是其本人 Fork，但不得自动改写远端配置。
-- 禁止把开发分支直接推送到 `upstream`。
-- 拉取或使用最新 `main` 前，必须让 `Yuchuan925/Yuxi:main` 和 `xerrors/Yuxi:main` 保持同步。不要使用不带远端名的 `git pull`，以免只拉取 Fork：
-
-```bash
-git status --short --branch
-git remote get-url origin
-git remote get-url upstream
-git fetch --prune origin main
-git fetch --prune upstream main
-git switch main
-git merge --ff-only upstream/main
-git push origin main:main
-git fetch --prune origin main
-test "$(git rev-parse refs/remotes/origin/main)" = "$(git rev-parse refs/remotes/upstream/main)"
-test "$(git rev-parse HEAD)" = "$(git rev-parse refs/remotes/upstream/main)"
-```
-
-  `upstream/main` 是 `xerrors/Yuxi:main` 的最新状态，`origin/main` 是 `Yuchuan925/Yuxi:main` 的同步目标；最后两个校验必须通过。若工作树不干净、本地 `main` 有独立修改、远端分支发生分叉、快进合并/推送失败或哈希校验不一致，立即停止并保护现有工作，不要 reset、rebase、覆盖或强制推送。
-- 从同步后的 `main` 创建独立分支。新功能使用 `feat/<topic>`，不是 `feature/<topic>`；其他类型使用贡献说明规定的 `fix/`、`docs/`、`refactor/`、`test/` 或 `chore/`。
-
-```bash
-git switch -c feat/<task-slug>
-```
-
-### 3. 实现与测试
-
-- 只实现验收标准直接需要的内容，不混入无关重构、格式化或“顺手优化”。修改不熟悉的模块前先用 `ARCHITECTURE.md` 理解边界，再通过代码搜索定位实现。
-- 在 Docker Compose 环境中开发和调试。按改动范围执行“检查 → 测试 → Lint”，先跑相关最小测试集，再扩大回归范围。
-- Feature 快速实现必须完成一条真实 E2E 用户链路，验证最终业务结果和副作用；不得用 mock、组件测试或单纯的 HTTP `200` 代替。
-- 保存实际执行的命令、环境和结果。至少提供一份测试日志或结果截图；UI 修改必须提供最终界面和关键交互截图，适合对比时附修改前 / 修改后截图。
-- 截图、日志、测试、文档和回复不得泄露 `.env`、账号、密码、Token、仓库 Secrets 或用户数据。
-- E2E 未实际运行或失败时，明确记录阻塞，不得宣称完成，也不得进入提交和 PR 阶段。
-
-### 4. PR 审核与确认门禁
-
-先根据 PR 目标仓库选择流程：
-
-- 目标是 `Yuchuan925/Yuxi:main` 时，代码修改和必要测试完成后可直接 commit、push 并创建 Draft PR；无需等待 Human Review，也无需提前展示 PR 标题或正文获得用户确认。仍须使用 PR 模板并如实记录改动、测试、风险和未验证内容。
-- 目标是 `xerrors/Yuxi:main`、其他仓库或用户明确要求先审核时，创建 PR 前执行下述确认门禁。
-
-需要确认门禁时，实现和测试完成后向用户展示以下审阅材料，再准备创建 PR：
-
-- 完整变更范围和关键 diff。
-- 详细设计说明与必要取舍。
-- 测试命令、真实结果、E2E 场景以及日志或截图。
-- 未验证内容、风险、敏感信息检查和文档影响。
-
-对于需要确认门禁的目标，即使用户要求“直接提交 PR”或已授权交付，Agent 在调用 PR 创建命令前仍必须先展示拟提交的 PR 标题和完整正文，等待用户明确确认。用户确认的是标题和正文，不替代测试、敏感信息检查、Fork/远程目标检查和 CI 结果记录；这些仍是 Agent 提交前的必做检查。没有明确确认时，不 commit、不 push、不创建 PR；不要虚构 Review 次数或日志。
-
-“继续”“可以”之外的上下文不能被默认为确认，需能明确对应当前标题和正文。本段只适用于需要确认门禁的 PR 目标，不适用于 `Yuchuan925/Yuxi:main` 的直接提交流程。
-
-### 5. Feature 快速实现专用身份门禁
-
-实现和测试完成，并在适用时通过 PR 标题与正文确认门禁后，在 commit 前检查 commit 身份、GitHub 账号和 Fork：
-
-```bash
-gh api user --jq .login
-git config --get user.name
-git config --get user.email
-git var GIT_AUTHOR_IDENT
-git var GIT_COMMITTER_IDENT
-git remote get-url origin
-git remote get-url upstream
-```
-
-- 当目标是 `Yuchuan925/Yuxi` 且当前 GitHub CLI 账号不是 `Yuchuan925` 时，记录当前账号，使用 `gh auth switch --user Yuchuan925` 临时切换；提交、推送、创建 PR 和验证完成后，使用 `gh auth switch --user <原账号>` 恢复。切换前后都用 `gh api user --jq .login` 验证实际账号。
-- 如果本机没有已登录的 `Yuchuan925` 账号，或切换/验证失败，停止在 commit 之前并报告阻塞；不要新增认证、修改 Git 身份、改写 remote 或伪造作者。
-- Git commit author / committer 与 `origin` 必须属于获准贡献者；默认工作区要求 `origin` 指向 `Yuchuan925/Yuxi`，Git 提交身份不得是 `xerrors` / 张文杰。
-- 对目标为 `xerrors/Yuxi` 或其他仓库的任务，继续要求使用对应获准贡献者身份；除非用户在当前任务明确授权，不得用 `xerrors` / 张文杰作为贡献者身份。
-- 创建 PR 前再次检查 `gh` 登录账号和 PR head 仓库，确保来源是获准贡献者的 Fork。
-
-### 6. Commit、Push 和 Draft PR
-
-身份门禁与适用的 PR 标题/正文确认门禁通过后：
-
-- 只暂存当前任务文件，使用中文 Conventional Commit，例如 `feat: 增加知识图谱导入流程`。
-- 将 `feat/<topic>` 推送到个人 Fork 的 `origin`，绝不推送到 `upstream`。
-- 默认从 `<contributor>/Yuxi:feat/<topic>` 向 `Yuchuan925/Yuxi:main` 创建 Draft PR，必须使用 `--draft` 并验证 `isDraft=true`。只有用户明确指定 `xerrors/Yuxi`、主仓库或其他目标仓库时，才把 PR base 改为该目标。
-- PR 标题直接表达目标，不加 `🤖`。正文严格填写仓库 PR 模板，并包含详细设计、影响范围、实际测试命令与结果、真实 E2E、日志或截图、未验证内容和关联 Issue；不写 AI/Agent 贡献说明或人工 Review 次数。
-- 目标为 `Yuchuan925/Yuxi:main` 时直接创建；其他目标在创建命令执行前先向用户展示拟提交的 PR 标题和完整正文，等待明确确认。
-- Draft PR 创建后不要自动转为 ready for review，不要由 Agent 直接回复 Review，也不要合并 PR。
-
-```bash
-git add <task-files>
-git commit -m "feat: <中文功能摘要>"
-git push -u origin feat/<task-slug>
-gh pr create \
-  --repo <pr-target-repo> \
-  --base main \
-  --head <contributor>:feat/<task-slug> \
-  --title "<功能目标>" \
-  --draft \
-  --body-file <completed-pr-template>
-gh pr view --repo <pr-target-repo> --json url,state,isDraft,title,author,headRepositoryOwner,headRefName,baseRefName
-```
-
-其中 `<pr-target-repo>` 默认为 `Yuchuan925/Yuxi`；如果用户明确要求向主仓库或 `xerrors/Yuxi` 创建 PR，则替换为用户指定的目标仓库。
-
-创建 Draft PR 后，必须把完整 PR 链接写入匹配的 xhome 任务正文，将任务状态改为 `review`，并添加 `待审查` 标签；保留已有内容和业务标签。若任务开始时位于 `todo`，同时严格执行下文“Todo 模型任务进入 PR 审查”规则，不得标记完成。只有 PR 合并、必要测试通过且验收结果已记录后，才把任务标记完成。
-
-## 开发项目管理
-
-当 Agent 在 Yuxi 工作区中工作，或用户要求创建、规划、实现、跟踪、完成、验证或交付 Yuxi 开发任务时，使用开发项目管理。这也包括“帮我开发 Yuxi 的 X”“实现这个 Yuxi 功能”“修一下 Yuxi 的 bug”或“这个任务做完了”等隐式请求。
-
-搜索或更新任务前，先获取实时 xhome 上下文：
-
-```bash
-gh repo view xerrors/Yuxi --json defaultBranchRef,url
-xhome auth status
-xhome projects list
-xhome projects tasks list <xhome-project-id>
-```
-
-开始任务时：
-
-- 首先搜索具有相同标题、关联 Issue/PR 或近似相同范围的现有 xhome 任务。更新现有任务，不要创建重复任务。
-- 如果不存在匹配任务，普通开发启动仍报告已跳过 xhome 更新；如果请求属于“新增任务”或“调研任务”触发器，必须通过 xhome 创建任务并先完成调研，不得跳过。
-- 只有用户明确要求创建或添加任务，或命中“调研任务”自动创建规则时，才创建 xhome 任务：
-
-```bash
-xhome projects tasks add <xhome-project-id> -t "<task title>" --status doing --priority medium --feasibility medium --content-file <task-body.md>
-```
-
-- 对于现有任务或经明确授权创建的任务，在正文中包含问题、预期结果、请求来源，以及相关 Issue、PR、文档、截图或本地设计笔记的链接。
-- 如果有开发或设计方案，在主要实现开始前将其写入任务正文。内容应具体：范围、方法、受影响区域、验证计划和已知风险。
-- 将匹配任务状态设为 `doing`。
-
-更新进行中的任务时：
-
-- 将 xhome 任务作为运营事实来源。把有意义的变化更新到任务正文中，不要只在聊天中零散记录计划/状态。
-- 新建的路线图任务也必须在调研完成后回写报告、`[MM-DD]` 标题和五级可行性字段；不添加“已调研”标签。
-- PR 创建后添加其链接。只有当分支或 PR 链接有助于继续工作时才包含它们。
-- 如果任务范围发生变化，更新设计方案并注明原因。
-
-### Todo 模型任务进入 PR 审查
-
-当 Agent / 模型接手任务时，必须记住从 xhome 读取到的初始状态。若初始状态是 `todo`，则该任务在创建或发现对应 PR 后进入审查阶段，以下规则优先于通用“完成任务”规则：
-
-- 即使代码、测试、commit、push 和 PR 都已完成，也不得把 xhome 状态直接改为 `done`。把状态从 `todo` 更新为 `review`；如果已经是 `doing`，也在 PR 创建后更新为 `review`。
-- 将任务标签更新为 `待审查`，表示等待维护者审查；保留已有业务标签，不重复追加同名标签。
-- 在任务正文新增或更新单一的 `## PR 与审查` 章节，至少包含 `PR：<完整 URL>` 和 `审查状态：待审查`；保留已有需求、设计、测试、截图和调研记录，不重复追加同一 PR 链接。
-- PR 为 Draft、Open、已请求 Review 或 CI 已通过都仍属于审查阶段。只有 PR 已合并，并且必要测试与验收结果已记录，才允许进入下面的完成流程；PR 关闭但未合并时不得标记完成，应记录原因和下一步。
-
-常用更新模式：
-
-```bash
-xhome projects tasks status <task-id> review
-xhome projects tasks update <task-id> --tags "<已有标签>,待审查"
+xhome projects tasks update <task-id> <field-options>
 xhome projects tasks content <task-id> --content-file <updated-content.md>
+xhome projects tasks status <task-id> <todo|doing|review|done>
 ```
 
-完成任务时：
+不要根据代码是否开始、测试是否完成等开发阶段事件自行流转任务。例外是成功创建 PR 后，可将匹配任务更新为 `review` 并关联 PR；这属于交付状态同步。
 
-- 如果找不到匹配的现有 xhome 任务，报告完成元数据未写入；不要事后补建任务。
-- 先检查是否命中“Todo 模型任务进入 PR 审查”规则。若对应 PR 尚未合并，停止完成转换，保持 `review` 和 `待审查`，确保正文含 PR 链接。
-- 不受上述审查门禁阻止、且完成条件全部满足时，将 xhome 任务状态标记为 `done`。
-- 在任务正文中添加或更新完成章节，其中包括：按北京时间填写的 `完成日期：YYYY-MM-DD`、`测试结果：...`，以及简洁的实现摘要。
-- 如果存在截图，在任务正文中附加或链接截图。优先使用持久的 GitHub issue/PR/comment/asset URL；如果只有本地截图，注明本地路径，并在上传到其他位置前询问用户。
-- 测试缺失或失败时，不要将任务标记为完成。应改为在状态和正文中记录阻塞原因、缺少的验证以及下一步行动。
+## 路线图管理
 
-常用编辑模式：
+当用户要求更新、刷新、同步或维护 Yuxi 路线图时：
 
-```bash
-xhome projects tasks update <task-id> --title "<title>" --tags "<tags>" --content-file <updated-content.md>
-xhome projects tasks status <task-id> done
-```
+- 未明确提到 `roadmap.md` 时，默认维护 xhome `Yuxi` 项目的路线图任务。
+- 只有明确要求修改公开文档或提供 `roadmap.md` 路径时，才编辑 `docs/develop-guides/roadmap.md`。
+- 同时要求两者时，先更新 xhome，再对文档做最小匹配修改。
 
-## Star 跟踪
-
-当用户询问 Yuxi Star、Star 增长、每日 Star 报告、GitHub 趋势图或 Hermes 风格图片报告时，使用 Star 跟踪。
-
-运行内置脚本：
-
-```bash
-python3 <skill-dir>/scripts/yuxi_stars_report.py
-```
-
-脚本会打印文本摘要并写入 `/tmp/yuxi_stars_chart.png`。它还会输出 `IMAGE:/tmp/yuxi_stars_chart.png`，供自动化系统使用该图片标记。
-
-需要图表样式规则、时间戳语义、Hermes 调度说明或 Stargazer 数据收集细节时，读取 `references/star-tracking.md`。
-
-## PR 跟踪
-
-当用户要求查看当前 PR、列出当前 PR、检查某个 PR 是否可以合并、总结 PR 动态或解释近期变更时，使用 PR 跟踪。
-
-生成快速报告时，运行：
-
-```bash
-python3 <skill-dir>/scripts/yuxi_pr_report.py current
-python3 <skill-dir>/scripts/yuxi_pr_report.py overview
-python3 <skill-dir>/scripts/yuxi_pr_report.py pr --number <number>
-```
-
-该脚本使用 `gh` 并生成 Markdown 报告。可以安全地将报告直接粘贴到回复中。额外说明应短于报告本身。
-
-如果手动操作，使用以下命令模式：
-
-```bash
-gh pr view --repo xerrors/Yuxi --json number,title,url,state,isDraft,headRefName,baseRefName,author,mergeable,mergeStateStatus,reviewDecision,statusCheckRollup,latestReviews,comments,commits,reviewRequests,updatedAt
-gh pr list --repo xerrors/Yuxi --state open --limit 10 --json number,title,url,author,headRefName,baseRefName,isDraft,reviewDecision,mergeStateStatus,statusCheckRollup,updatedAt
-```
-
-对于“current PR”，首先尝试从当前工作树查找与分支关联的 PR。如果当前分支没有 PR，明确说明，然后回退到开放 PR 概览。
-
-对于“最新 PR 动态”，应包含：
-
-- PR 身份：编号、标题、URL，以及 draft/open/closed 状态。
-- 评审和检查：人类可读的评审决定与简洁的 CI 状态。列出失败的检查名称，但默认不要打印通过/等待中的数量。
-- 近期活动：总共最多列出最新的三个 commit、review 或 comment。
-- 新鲜度：使用北京时间表示的 `updatedAt`。
-- 下一步行动：简短、具体的说明，例如“处理 requested changes”“修复失败检查”“等待评审”或“看起来可以合并”。
-
-普通 PR 报告中省略作者、分支名、合并状态、原始可合并性、仓库名和报告生成时间，除非这些信息能解释阻塞原因，或用户明确要求。仅在 merge state 构成阻塞时提及，例如存在冲突、分支落后或合并队列被阻塞。
-
-不要夸大合并就绪程度。如果缺少数据，应说明无法读取哪个信号，而不是猜测。
-
-## 路线图更新
-
-当用户要求更新、刷新、同步或维护 Yuxi 路线图时，使用路线图更新；这也包括添加用户自己的条目和从 Issue 派生的条目。
-
-解释规则：
-
-- 如果用户说“update roadmap”“更新 roadmap”“同步路线图”或类似表达，但没有明确提到 `roadmap.md`，则更新 xhome `Yuxi` 项目中的匹配任务，而不是 Markdown 文件。
-- 只有当用户明确要求更新 `roadmap.md` 文件、修改公开文档页面，或提供直接的 `roadmap.md` 路径时，才编辑 `docs/develop-guides/roadmap.md`。
-- 如果用户同时要求更新 xhome 任务和 `roadmap.md`，先更新 xhome 任务，再对文档做最小的匹配更改。
-
-搜索或更新路线图任务前，获取实时上下文：
+读取实时上下文：
 
 ```bash
 gh repo view xerrors/Yuxi --json defaultBranchRef,url
@@ -393,86 +108,141 @@ gh issue list --repo xerrors/Yuxi --state open --label roadmap --limit 100 --jso
 gh issue list --repo xerrors/Yuxi --state open --label feat --limit 100 --json number,title,labels,updatedAt,url
 ```
 
-检查 xhome 任务后：
+路线图规则：
 
-- 当内容或状态需要变化时，更新匹配的现有路线图任务。
-- 如果不存在匹配任务，在 `Skipped` 下列出它，并说明原因是没有找到现有 xhome 任务。一般性的更新、刷新或同步路线图请求不授权创建任务。
-- 只有当用户明确要求创建或添加路线图条目时，才通过 xhome 创建任务：
+- 更新匹配的现有任务；没有匹配项时列入 `Skipped`。
+- 只有用户明确要求添加或创建路线图条目时，才创建 xhome 任务。
+- 优先使用带 `roadmap` 标签的 Issue；仅在用户要求扩大范围时检查相关 `feat` Issue。
+- 正文记录 `来源：用户提供`、`来源：GitHub Issue` 或 `来源：docs/develop-guides/roadmap.md`，并保留 Issue URL、分类和目标版本等已知信息。
+- 去掉 `Feat:`、`Error:`、`Question:` 等前缀，只做必要的标题清理。
+- 不自动生成调研报告、日期前缀、设计方案或可行性结论。
 
-```bash
-xhome projects tasks add <xhome-project-id> \
-  -t "<task title>" \
-  --status doing \
-  --priority medium \
-  --tags "路线图" \
-  --content-file <task-body.md>
-```
-
-如果用户提供路线图条目，将其内容视为匹配和更新的权威依据。只有当请求明确要求添加或创建这些条目时才创建任务。对于从 Issue 派生的条目，优先使用带有 `roadmap` 标签的开放 Issue；当用户要求更广泛地从 Issue 中提取时，也检查相关的 `feat` Issue。除非用户明确选择，或 Issue 已经带有路线图信号，否则不要把普通 bug 或 question Issue 添加到路线图。
-
-xhome 路线图任务规则：
-
-- 当用户明确授权创建时，默认创建 `doing` 状态的 xhome 任务，除非用户明确指定其他状态。
-- 通过匹配现有 xhome 任务标题、Issue 编号和近似措辞来避免重复。
-- 在任务正文中包含 `来源：用户提供`、`来源：GitHub Issue` 或 `来源：docs/develop-guides/roadmap.md`。
-- 对从 Issue 派生的任务，使用 `https://github.com/xerrors/Yuxi/issues/123` 添加 Issue 链接。
-- 在任务正文中保留有用分类，例如 `分类：知识库`、`分类：智能体`、`分类：Bugs`，或 `版本：v0.7.1` 等目标版本。
-- 将 Issue 标题改为简洁的路线图任务标题：去掉 `Feat:`、`Error:`、`Question:` 等前缀，只做足以符合路线图措辞的改写。
-- 新建或更新路线图任务时，按“调研任务”规则完成证据收集，并将报告、日期、状态、标签和来源写回 xhome。
-
-只有在明确编辑 `roadmap.md` 时，才使用以下文档规则：
-
-- 修改前读取当前文档：
+明确编辑 `roadmap.md` 时，先读取当前文档，保留既有章节、语气、徽章和分组，只做用户要求的最小变更：
 
 ```bash
 gh api repos/xerrors/Yuxi/contents/docs/develop-guides/roadmap.md --jq .content | base64 --decode
 ```
 
-- 除非用户要求重组，否则保留现有章节和语气：`看板`、`知识库` / `智能体` / `其他` 等分组主题标题、`仅设想` 和 `Bugs`。
-- 使用 `([#123](https://github.com/xerrors/Yuxi/issues/123))` 为 issue 派生条目添加来源链接。
-- 同时匹配 issue 编号和近似标题以避免重复。
-- 保留 `<Badge text="v0.7.1" />` 等现有徽章；只有当用户提供目标版本，或现有路线图上下文能明确判断目标时才添加徽章。
-- 将 issue 标题改写为路线图风格的行动项：去掉 `Feat:`、`Error:`、`Question:` 等前缀，只做足以符合路线图措辞的改写。
-- 对选入路线图的 bug issue，将其放在 `### Bugs` 下；对功能和体验工作，选择最接近的现有主题分组。
-- 编辑后，展示修改过的文件和简洁摘要。如果用户要求提交或推送文档更改，先请求明确确认。
+Issue 派生条目使用 `([#123](https://github.com/xerrors/Yuxi/issues/123))` 关联来源。用户若要求提交或推送文档改动，先展示改动文件和摘要并等待明确确认。
+
+## PR 创建与交付门禁
+
+当用户要求为已经准备好的 Yuxi 变更创建、提交或更新 PR 时使用。本流程只包装已有变更，不负责开发、测试设计或代码审阅。
+
+### 1. 定位交付范围
+
+```bash
+git status --short --branch
+git remote -v
+git branch --show-current
+gh api user --jq .login
+```
+
+- 保护已有工作树，不 reset、rebase、强制推送或改写无关文件。
+- 不在 `main` 上直接交付；head 必须是独立任务分支。
+- 默认工作区中 `origin` 应指向贡献者 Fork，`upstream` 应指向 `xerrors/Yuxi`。禁止把 head 分支推送到 `upstream`。
+- 只暂存用户指定或能明确归属于当前交付的文件；范围不清时先展示候选文件并请求确认。
+- 若变更仍需实现、修复或补测试，停止 PR 创建并报告缺口，不在本 skill 内处理。
+
+### 2. PR 前门禁
+
+创建 PR 前逐项验证：
+
+- 目标门禁：明确 base 仓库、base 分支、head owner 和 head 分支。
+- 身份门禁：`gh` 登录账号、Git author/committer 和 `origin` owner 必须属于获准贡献者；不得把 `xerrors` / 张文杰作为默认贡献者身份。
+- 变更门禁：检查 staged/committed 文件范围，不包含无关修改、密钥、Token、`.env` 或用户数据。
+- 模板门禁：读取并填写仓库当前 `.github/PULL_REQUEST_TEMPLATE.md`；若本地缺失，从目标仓库读取。
+- 证据门禁：只记录开发者实际提供或现有日志中能验证的测试结果。测试缺失或失败时如实写入，不自行设计或宣称已完成测试。
+- 分支门禁：确认 head 已提交且可推送到贡献者 Fork；不得推送到 `upstream`。
+- 重复门禁：检查同一 head 是否已有 PR；存在时更新或返回现有 PR，不重复创建。
+
+对于默认目标 `Yuchuan925/Yuxi:main`，门禁通过后可直接 commit、push 并创建 Draft PR。若当前 `gh` 不是 `Yuchuan925`，只允许切换到本机已经认证的 `Yuchuan925` 账号；记录原账号，完成后恢复并验证。切换失败时停止，不修改凭据、Git 身份或 remote。
+
+对于 `xerrors/Yuxi:main`、其他目标仓库，或用户明确要求先确认时，必须先展示：
+
+- 精确的目标仓库/base/head。
+- 将提交的文件范围和 commit 信息。
+- 拟用 PR 标题与完整正文。
+- 已知测试证据、CI 情况和未验证项。
+
+等待用户明确确认当前材料后，才能 commit、push 或创建 PR。该确认是发布授权，不是代码审阅，也不调用 `xerrors-review`。
+
+### 3. Commit、Push、Draft PR
+
+- 只提交已确认范围，使用中文 Conventional Commit。
+- 只把 head 分支推送到贡献者 Fork 的 `origin`。
+- 默认创建 Draft PR；除非用户明确要求，否则不转为 ready、不回复 review、不 approve、不合并。
+- 标题直接表达目标，不加 `🤖` 或 AI/Agent 贡献说明。
+- 正文忠实填写模板，包含变更摘要、已有测试证据、风险/未验证项和关联 Issue；缺失信息标为未验证。
+
+```bash
+git add <confirmed-files>
+git commit -m "<type>: <中文摘要>"
+git push -u origin <head-branch>
+gh pr create \
+  --repo <target-repo> \
+  --base <base-branch> \
+  --head <contributor>:<head-branch> \
+  --title "<PR 标题>" \
+  --draft \
+  --body-file <completed-pr-template>
+gh pr view --repo <target-repo> --json url,state,isDraft,title,author,headRepositoryOwner,headRefName,baseRefName,statusCheckRollup
+```
+
+创建成功后，把完整 PR URL 合并到匹配的 xhome 任务正文，将状态设为 `review`，保留已有业务标签，并添加不重复的 `待审查` 标签。只有用户明确要求且 PR 已合并时，才把任务更新为 `done`。
+
+## PR 与门禁状态报告
+
+快速报告：
+
+```bash
+python3 <skill-dir>/scripts/yuxi_pr_report.py current
+python3 <skill-dir>/scripts/yuxi_pr_report.py overview
+python3 <skill-dir>/scripts/yuxi_pr_report.py pr --number <number>
+```
+
+手动读取：
+
+```bash
+gh pr view --repo xerrors/Yuxi --json number,title,url,state,isDraft,mergeStateStatus,reviewDecision,statusCheckRollup,latestReviews,comments,commits,updatedAt
+gh pr list --repo xerrors/Yuxi --state open --limit 10 --json number,title,url,isDraft,reviewDecision,mergeStateStatus,statusCheckRollup,updatedAt
+```
+
+对于“current PR”，先查当前分支关联 PR；没有时说明并回退到开放 PR 概览。报告包含 PR 身份、状态、人类审批信号、CI、最多三条近期活动、北京时间更新时间和下一步门禁行动。读取审批结论只用于报告和门禁判断，不执行代码审阅。
+
+普通报告省略作者、分支、原始 mergeable 和仓库名，除非这些信息解释阻塞。数据缺失时明确写不可用，不猜测“可合并”。
+
+## Star 跟踪
+
+```bash
+python3 <skill-dir>/scripts/yuxi_stars_report.py
+```
+
+脚本打印北京时间摘要并写入 `/tmp/yuxi_stars_chart.png`。图表、时间戳、调度和 API 细节见 [Star 跟踪参考](references/star-tracking.md)。
 
 ## 回复格式
 
-对于 PR 状态请求，优先使用以下紧凑结构，并将普通报告控制在约 8–10 行：
+PR / 门禁状态使用紧凑结构：
 
 ```markdown
 ## PR 状态
 - PR：#123 标题
 - 状态：open / draft / closed
-- 评审：approved / changes requested / review required / unknown
-- 检查：passing / failing: <check names> / pending / unavailable
+- 审批：approved / changes requested / review required / unknown
+- CI：passing / failing: <check names> / pending / unavailable
 - 更新时间：YYYY-MM-DD HH:mm CST
 
-## 最新活动
-- commit/review/comment 行，总计最多 3 条
-
-## 下一步行动
+## 下一步门禁
 ...
 ```
 
-对于 Star 报告，包含文本摘要，并在可能时展示或链接生成的图表。
-
-对于路线图更新，按以下格式总结：
-
-```markdown
-## 路线图更新
-- xhome 项目：Yuxi（ID：<xhome-project-id>）
-- 已添加：...
-- 已更新：...
-- 已跳过：...（适用时说明原因）
-- 来源 issue：#123、#456
-```
+项目或路线图更新应列出 xhome 项目与任务 ID、已添加、已更新、已跳过和来源链接。PR 创建结果应列出 URL、目标、head、Draft 状态、已通过/未通过门禁，以及关联的 xhome 状态更新。
 
 ## 常见陷阱
 
-- GitHub 数据变化很快。对于 latest/current/today 请求，始终重新查询。
-- 不带 PR 编号的 `gh pr view` 依赖当前 Git 分支。如果 shell 不在 Yuxi 工作区中，使用带有 `--repo xerrors/Yuxi` 的 `pr list`，或明确指定 PR 编号。
-- 匿名 GitHub API 调用有速率限制。尽可能优先使用 `gh`。
-- Star 图表按北京时间的自然日边界计算，因此在 24:00 CST 之前，“今天”始终是不完整的一天。
-- 没有找到匹配的 xhome 项目或任务，不代表获得了创建权限。除非用户明确要求创建，否则报告未找到。
-- 路线图 issue 的标签并不总是一致。如果用户要求纳入 issue，报告检查了哪些标签筛选器、跳过了哪些 issue，而不是静默猜测。
+- 实时请求必须重新查询 GitHub/xhome。
+- 不带 PR 编号的 `gh pr view` 依赖当前分支；不在 Yuxi 工作区时显式使用 `--repo`。
+- 没有匹配项目或任务不代表获得创建权限。
+- 路线图 Issue 标签不一致时，报告筛选器和跳过项，不静默猜测。
+- PR 创建授权不等于开发、代码审阅或合并授权。
+- 不要为了满足门禁而伪造测试、CI、审批或身份信息。

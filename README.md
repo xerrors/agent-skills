@@ -91,6 +91,7 @@ Restart Codex after installing or updating skills.
 - `xerrors-review`: combine Codex review contracts, Claude Code's parallel
   finder/verifier orchestration, and Xerrors' minimal-code judgment for
   high-confidence review or behavior-preserving simplification.
-- `yuxi-manage`: manage the `xerrors/Yuxi` GitHub project, including star
-  growth reports, trend charts, current PR status, open PR overviews, review
-  state, CI/check signals, and latest PR dynamics.
+- `yuxi-manage`: manage the `xerrors/Yuxi` xhome project and roadmap, create
+  PRs with delivery gates, and report star growth, PR approval/CI signals, and
+  repository activity; it deliberately excludes specs, implementation, test
+  design, and code-review workflows.
