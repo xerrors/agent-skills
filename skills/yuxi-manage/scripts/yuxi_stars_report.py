@@ -6,6 +6,7 @@ Uses authenticated gh CLI for reliable data fetching.
 """
 
 import json
+import math
 import os
 import subprocess
 import sys
@@ -15,36 +16,85 @@ from collections import Counter
 REPO = "xerrors/Yuxi"
 OUTPUT_PATH = "/tmp/yuxi_stars_chart.png"
 DAYS = 7
+PAGE_SIZE = 100
+PAGE_TIMEOUT = 30
+MAX_RECENT_PAGES = 20
 CST = timezone(timedelta(hours=8))
 
-def fetch_stargazers_by_gh():
-    # Use gh api to fetch stargazers with pagination
-    cmd = [
-        "gh", "api",
-        f"repos/{REPO}/stargazers",
-        "--header", "Accept: application/vnd.github.v3.star+json",
-        "--paginate",
-        "-q", ".[].starred_at"
-    ]
-    # Configure proxy for subprocess just in case
+def github_env():
+    """Keep an explicitly configured proxy, with the local proxy as fallback."""
     env = os.environ.copy()
-    env["http_proxy"] = "http://127.0.0.1:7890"
-    env["https_proxy"] = "http://127.0.0.1:7890"
-    
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=60, env=env)
-    if result.returncode != 0:
-        raise RuntimeError(f"gh api error: {result.stderr}")
-    
-    # Each line represents a starred_at timestamp
-    timestamps = [line.strip() for line in result.stdout.split('\n') if line.strip()]
+    if not (env.get("http_proxy") or env.get("HTTP_PROXY")):
+        env["http_proxy"] = "http://127.0.0.1:7890"
+    if not (env.get("https_proxy") or env.get("HTTPS_PROXY")):
+        env["https_proxy"] = "http://127.0.0.1:7890"
+    return env
+
+
+def fetch_stargazers_by_gh(window_start, total_now):
+    """Fetch only the tail pages needed to cover the reporting window."""
+    last_page = max(1, math.ceil(total_now / PAGE_SIZE))
+    timestamps = []
+    pages_fetched = []
+
+    for page in range(last_page, 0, -1):
+        if len(pages_fetched) >= MAX_RECENT_PAGES:
+            raise RuntimeError(
+                f"recent stargazer window exceeds {MAX_RECENT_PAGES} pages; "
+                "increase MAX_RECENT_PAGES"
+            )
+
+        cmd = [
+            "gh", "api",
+            f"repos/{REPO}/stargazers?per_page={PAGE_SIZE}&page={page}",
+            "--header", "Accept: application/vnd.github.star+json",
+            "-q", ".[].starred_at",
+        ]
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=PAGE_TIMEOUT,
+            env=github_env(),
+        )
+        if result.returncode != 0:
+            raise RuntimeError(f"gh api error on page {page}: {result.stderr}")
+
+        page_timestamps = [
+            line.strip() for line in result.stdout.splitlines() if line.strip()
+        ]
+        pages_fetched.append(page)
+        timestamps.extend(page_timestamps)
+
+        parsed_times = []
+        for timestamp in page_timestamps:
+            try:
+                parsed_times.append(
+                    datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
+                )
+            except ValueError:
+                continue
+
+        if not parsed_times:
+            break
+
+        # The newest page can already be older than the window. Otherwise,
+        # stop once this page reaches the window boundary.
+        if max(parsed_times) < window_start or min(parsed_times) <= window_start:
+            break
+
+    print(
+        f"Fetched stargazer pages {min(pages_fetched)}-{max(pages_fetched)} "
+        f"({len(pages_fetched)} page(s))",
+        file=sys.stderr,
+    )
     return timestamps
 
 def get_total_stars():
     cmd = ["gh", "api", f"repos/{REPO}", "-q", ".stargazers_count"]
-    env = os.environ.copy()
-    env["http_proxy"] = "http://127.0.0.1:7890"
-    env["https_proxy"] = "http://127.0.0.1:7890"
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=15, env=env)
+    result = subprocess.run(
+        cmd, capture_output=True, text=True, timeout=PAGE_TIMEOUT, env=github_env()
+    )
     if result.returncode != 0:
         raise RuntimeError(f"gh api error: {result.stderr}")
     return int(result.stdout.strip())
@@ -65,7 +115,7 @@ def main():
 
     # Collect all stars
     try:
-        all_timestamps = fetch_stargazers_by_gh()
+        all_timestamps = fetch_stargazers_by_gh(window_start, total_now)
     except Exception as e:
         print(f"Error fetching stargazers: {e}", file=sys.stderr)
         sys.exit(1)
@@ -164,7 +214,8 @@ def main():
     n = len(dates)
     ax1.plot(range(n), cumulative, color=color_main, linewidth=3,
              marker='o', markersize=10, markerfacecolor='white',
-             markeredgecolor=color_main, markeredgewidth=2.5, zorder=5)
+             markeredgecolor=color_main, markeredgewidth=2.5, zorder=5,
+             label='Cumulative Stars')
     ax1.fill_between(range(n), cumulative, min(cumulative) - 20, alpha=0.1, color=color_main)
 
     for i, stars in enumerate(cumulative):
@@ -180,7 +231,10 @@ def main():
 
     ax2 = ax1.twinx()
     for i, (val, color, alpha) in enumerate(zip(new_stars, bar_colors, bar_alphas)):
-        bar = ax2.bar(i, val, alpha=alpha, color=color, width=0.5, zorder=2)
+        bar = ax2.bar(
+            i, val, alpha=alpha, color=color, width=0.5, zorder=2,
+            label='Daily New Stars' if i == 0 else '_nolegend_',
+        )
         label = f'+{val}' if i < n - 1 else f'+{val}*'
         ax2.text(bar[0].get_x() + bar[0].get_width() / 2., bar[0].get_height() + 1,
                  label, ha='center', va='bottom', fontsize=10,

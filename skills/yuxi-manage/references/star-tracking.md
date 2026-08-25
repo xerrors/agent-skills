@@ -52,18 +52,20 @@ python3 scripts/yuxi_stars_report.py
 
 - **GitHub API**：`https://api.github.com/repos/xerrors/Yuxi`
 - **Stargazers API**：`https://api.github.com/repos/xerrors/Yuxi/stargazers?per_page=100&page=N`（需 `Accept: application/vnd.github.v3.star+json` 头）
-- **代理**：`http://127.0.0.1:7890`
-- 无 GitHub Token，使用匿名请求（60 次/小时限制）
+- **认证**：使用已认证的 `gh` CLI；未认证时会退化为匿名请求（60 次/小时限制）
+- **代理**：优先使用现有 `http_proxy`/`https_proxy`，未配置时回退到 `http://127.0.0.1:7890`
 
-### 脚本超时时的回退方案（实测常用）
+### 分页策略
 
-`scripts/yuxi_stars_report.py` 需要遍历全部 stargazer 分页，在 6000+ Star 的仓库上经常超时。已验证可用的回退流程：
+`scripts/yuxi_stars_report.py` 不再遍历全部历史分页。它先读取当前总数，再从最后一页向前抓取，直到覆盖报告窗口（默认近 7 天），避免 6000+ Star 仓库因全量分页超过超时限制。
+
+如果需要手动执行或调试，可以使用以下流程：
 
 1. 用 `gh` 取当前总数：`gh api repos/xerrors/Yuxi --jq .stargazers_count`。
-2. 只抓最后 4–5 页拿到近期 Star 时间戳（`per_page=100`，页码 ≈ `ceil(总数/100)` 往前推 4 页；6385 Star 对应 page 61–65）：
+2. 根据 `ceil(总数/100)` 定位最后一页，再向前抓取直到时间戳早于报告窗口。当前 6547 Star 对应最后一页 66，近 7 天通常只需要第 65–66 页：
 
 ```bash
-for p in 61 62 63 64 65; do
+for p in 65 66; do
   gh api "repos/xerrors/Yuxi/stargazers?per_page=100&page=$p" \
     -H "Accept: application/vnd.github.star+json" --jq '.[].starred_at'
 done > /tmp/yuxi_stars_raw.txt
@@ -74,7 +76,7 @@ done > /tmp/yuxi_stars_raw.txt
 注意事项：
 
 - Accept 头只接受 `application/vnd.github.star+json` 或旧写法 `application/vnd.github.v3.star+json`；写成 `application/vnd.star+json` 会返回 415。
-- 随着总数增长，页码需要同步上移，否则会漏掉最新的 Star。抓完先检查末条时间戳是否接近当前时间。
+- 随着总数增长，最后页码需要同步上移，否则会漏掉最新的 Star。抓完先检查末条时间戳是否接近当前时间。
 - 输出图表时用近 14 日双色对比（前 7 日浅灰、近 7 日主色），并注明「今日未完整不计入」。
 
 ## 定时任务
