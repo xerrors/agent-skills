@@ -40,7 +40,7 @@
     {
       "id": 7,
       "prompt": "快速实现 Yuxi 的知识库文件树，先写 spec、开发、测试并审阅代码。",
-      "expected_output": "The skill must state that spec writing, implementation, test design, and code review are outside yuxi-manage. It may perform only separately requested xhome or PR-delivery management actions and must not invoke xerrors-review automatically.",
+      "expected_output": "The skill must state that spec writing, implementation, test design, and code review are outside yuxi-manage. It may perform only separately requested xhome or PR-delivery management actions and must not invoke an external code-review skill automatically.",
       "files": []
     },
     {
@@ -52,7 +52,7 @@
     {
       "id": 9,
       "prompt": "把这个分支给 xerrors/Yuxi 主仓库开 PR。",
-      "expected_output": "Before any commit, push, or PR creation, show the exact target/base/head, file and commit scope, proposed title and complete body, available test/CI evidence, and unverified items, then wait for explicit publishing confirmation. This is a delivery authorization gate, not code review, and must not invoke xerrors-review.",
+      "expected_output": "Before any commit, push, or PR creation, show the exact target/base/head, file and commit scope, proposed title and complete body, available test/CI evidence, and unverified items, then wait for explicit publishing confirmation. This is a delivery authorization gate, not code review, and must not invoke an external code-review skill.",
       "files": []
     },
     {
@@ -76,7 +76,7 @@
     {
       "id": 13,
       "prompt": "审阅一下 Yuxi PR #123，发现问题后回复 review。",
-      "expected_output": "Explain that code review and publishing review responses are outside yuxi-manage. The skill may report PR, approval, and CI status, but must not inspect code for findings, publish a review, approve, request changes, or invoke xerrors-review unless the user separately and explicitly calls that skill.",
+      "expected_output": "Explain that code review and publishing review responses are outside yuxi-manage. The skill may report PR, approval, and CI status, but must not inspect code for findings, publish a review, approve, request changes, or invoke an external code-review skill.",
       "files": []
     }
   ]

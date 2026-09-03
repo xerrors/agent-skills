@@ -20,7 +20,7 @@ description: 管理 xerrors/Yuxi 的 xhome 项目、路线图、GitHub PR 创建
 - 实现功能、修复 bug、重构代码、选择架构或拆分开发步骤。
 - 设计测试、安排 E2E、要求截图，或替开发者决定应运行哪些测试。
 - 审阅代码、生成 review findings、回复 PR review、approve、request changes 或合并 PR。
-- 自动调用、要求调用或依赖 `xerrors-review`；只有用户在当前请求中另行明确调用该 skill 时，才把它视为独立工作流。
+- 自动调用、要求调用或依赖外部代码审阅 skill；代码审阅始终是独立工作流。
 - 因为用户正在开发 Yuxi，就自动创建任务、写 spec、记录设计或持续同步开发过程。
 
 如果一个请求同时包含开发和管理动作，只执行明确的项目管理或 PR 交付部分；开发部分交给当前项目适用的开发流程。创建 PR 时可以提交和推送已准备好的变更，但不得借机修改代码。
@@ -165,7 +165,7 @@ gh api user --jq .login
 - 拟用 PR 标题与完整正文。
 - 已知测试证据、CI 情况和未验证项。
 
-等待用户明确确认当前材料后，才能 commit、push 或创建 PR。该确认是发布授权，不是代码审阅，也不调用 `xerrors-review`。
+等待用户明确确认当前材料后，才能 commit、push 或创建 PR。该确认是发布授权，不是代码审阅，也不调用外部代码审阅 skill。
 
 ### 3. Commit、Push、Draft PR
 

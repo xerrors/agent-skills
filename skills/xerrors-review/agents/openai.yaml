@@ -1,4 +1,0 @@
-interface:
-  display_name: "Xerrors Review"
-  short_description: "融合 Codex、Claude Code 与 Xerrors 的并行审阅和简化流程"
-  default_prompt: "Use $xerrors-review review high to run a parallel, high-confidence review of the current working-tree changes."
